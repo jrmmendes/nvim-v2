@@ -30,6 +30,7 @@ vim.opt.expandtab = true          -- Convert tabs to spaces
 vim.opt.textwidth = 80            -- Maximum width of text
 vim.opt.hidden = true 
 vim.opt.showcmd = true
+vim.opt.scrolloff = 5
 
 -- buffer keymaps
 vim.keymap.set('n', '<C-N>', ':bnext<CR>', { noremap = true, silent = true })

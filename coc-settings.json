@@ -1,0 +1,38 @@
+{
+  "tsserver.maxTsServerMemory": 300,
+  "javascript.validate.enable": false,
+  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": true,
+  "languageserver": {
+    "ccls": {
+      "command": "ccls",
+      "filetypes": [
+        "c",
+        "cpp"
+      ],
+      "rootPatterns": [
+        ".ccls",
+        "compile_commands.json",
+        ".vim",
+        ".git/",
+        ".hg"
+      ],
+      "initializationOptions": {
+        "cache": {
+          "directory": "/tmp/ccls"
+        },
+        "clang": {
+          "resourceDir": "/usr/lib/clang/9.0.0",
+          "extraArgs": [
+            "-isystem",
+            "/usr/local/include",
+            "isystem",
+            "/usr/lib/clang/9.0.0/include",
+            "isystem",
+            "/usr/include",
+            "%h -x c++-header"
+          ]
+        }
+      }
+    }
+  }
+}
