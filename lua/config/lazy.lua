@@ -20,6 +20,15 @@ vim.opt.rtp:prepend(lazypath)
 -- This is also a good place to setup other settings (vim.opt)
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
+vim.opt.number = true             -- Show line numbers
+vim.opt.showtabline = 0           -- Disable tabline
+vim.opt.autoindent = true         -- Auto indent new lines
+vim.opt.smartindent = true        -- Smart auto indenting
+vim.opt.tabstop = 2               -- Number of spaces per tab
+vim.opt.shiftwidth = 2            -- Number of spaces for each step of autoindent
+vim.opt.expandtab = true          -- Convert tabs to spaces
+vim.opt.textwidth = 80            -- Maximum width of text
+vim.opt.hidden = true 
 
 -- Setup lazy.nvim
 require("lazy").setup({
@@ -29,7 +38,7 @@ require("lazy").setup({
   },
   -- Configure any other settings here. See the documentation for more details.
   -- colorscheme that will be used when installing plugins.
-  install = { colorscheme = { "habamax" } },
+  install = { colorscheme = { "gruvbox" } },
   -- automatically check for plugin updates
   checker = { enabled = true },
 })
