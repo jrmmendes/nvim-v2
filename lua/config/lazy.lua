@@ -30,9 +30,19 @@ vim.opt.expandtab = true          -- Convert tabs to spaces
 vim.opt.textwidth = 80            -- Maximum width of text
 vim.opt.hidden = true 
 vim.opt.showcmd = true
+
+-- buffer keymaps
 vim.keymap.set('n', '<C-N>', ':bnext<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<C-P>', ':bprev<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<C-D>', ':bdelete %<CR>', { noremap = true, silent = true })
+
+-- set current file as working directory
+vim.api.nvim_create_autocmd("BufEnter", {
+  pattern = "*",
+  callback = function()
+    vim.cmd('lcd %:p:h')
+  end
+})
 
 -- Setup lazy.nvim
 require("lazy").setup({
