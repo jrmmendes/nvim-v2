@@ -1,5 +1,6 @@
 {
   "tsserver.maxTsServerMemory": 300,
+  "suggest.noselect": false,
   "javascript.validate.enable": false,
   "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": true,
   "languageserver": {
