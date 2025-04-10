@@ -23,3 +23,7 @@ Other requirements:
 - Ag: https://github.com/ggreer/the_silver_searcher
 - nerdfonts: https://www.nerdfonts.com/font-downloads
 - konsole: https://konsole.kde.org/
+
+Demo:
+
+[![asciicast](https://asciinema.org/a/zaWcFYmNISZxxQYglX0TiPecz.svg)](https://asciinema.org/a/zaWcFYmNISZxxQYglX0TiPecz)
