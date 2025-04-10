@@ -1,5 +1,6 @@
 return {
     {
+        enabled=false,
         'neoclide/coc.nvim',
         branch = 'release',
         build = ':CocInstall coc-json coc-tsserver coc-pyright',
@@ -34,50 +35,50 @@ return {
                 end
             end, opts)
 
-            keyset('i', '<S-TAB>', function()
-                if vim.fn.pumvisible() == 1 then
-                    return '<C-p>'
-                else
-                    return '<C-h>'
-                end
-            end, opts)
+        keyset('i', '<S-TAB>', function()
+            if vim.fn.pumvisible() == 1 then
+                return '<C-p>'
+            else
+                return '<C-h>'
+            end
+        end, opts)
 
-            -- Use <c-space> to trigger completion
-            keyset('i', '<c-space>', vim.fn['coc#refresh'], opts)
+    -- Use <c-space> to trigger completion
+    keyset('i', '<c-space>', vim.fn['coc#refresh'], opts)
 
-            -- Make <CR> auto-select first completion item
-            keyset('i', '<cr>', function()
-                if vim.fn.pumvisible() == 1 then
-                    return '<C-y>'
-                else
-                    return '<C-g>u<CR>'
-                end
-            end, opts)
+    -- Make <CR> auto-select first completion item
+    keyset('i', '<cr>', function()
+        if vim.fn.pumvisible() == 1 then
+            return '<C-y>'
+        else
+            return '<C-g>u<CR>'
+        end
+    end, opts)
 
-            -- Navigation and GoTo mappings
-            keyset('n', '[g', '<Plug>(coc-diagnostic-prev)', {silent = true})
-            keyset('n', ']g', '<Plug>(coc-diagnostic-next)', {silent = true})
-            keyset('n', 'gd', '<Plug>(coc-definition)', {silent = true})
-            keyset('n', 'gy', '<Plug>(coc-type-definition)', {silent = true})
-            keyset('n', 'gi', '<Plug>(coc-implementation)', {silent = true})
-            keyset('n', 'gr', '<Plug>(coc-references)', {silent = true})
+-- Navigation and GoTo mappings
+keyset('n', '[g', '<Plug>(coc-diagnostic-prev)', {silent = true})
+keyset('n', ']g', '<Plug>(coc-diagnostic-next)', {silent = true})
+keyset('n', 'gd', '<Plug>(coc-definition)', {silent = true})
+keyset('n', 'gy', '<Plug>(coc-type-definition)', {silent = true})
+keyset('n', 'gi', '<Plug>(coc-implementation)', {silent = true})
+keyset('n', 'gr', '<Plug>(coc-references)', {silent = true})
 
-            -- Use K to show documentation
-            keyset('n', 'K', function()
-                local filetype = vim.bo.filetype
-                if vim.tbl_contains({'vim', 'help'}, filetype) then
-                    vim.cmd('help ' .. vim.fn.expand('<cword>'))
-                else
-                    vim.fn['CocAction']('doHover')
-                end
-            end, {silent = true})
+-- Use K to show documentation
+keyset('n', 'K', function()
+    local filetype = vim.bo.filetype
+    if vim.tbl_contains({'vim', 'help'}, filetype) then
+        vim.cmd('help ' .. vim.fn.expand('<cword>'))
+    else
+        vim.fn['CocAction']('doHover')
+    end
+end, {silent = true})
 
             -- Highlight symbol under cursor
             vim.api.nvim_create_autocmd('CursorHold', {
-                callback = function()
-                    vim.fn['CocActionAsync']('highlight')
-                end
-            })
+                    callback = function()
+                        vim.fn['CocActionAsync']('highlight')
+                    end
+                })
 
             -- Rename current word
             keyset('n', '<leader>rn', '<Plug>(coc-rename)', {silent = true})
@@ -107,13 +108,13 @@ return {
                 vim.fn['CocAction']('format')
             end, {})
 
-            vim.api.nvim_create_user_command('Fold', function(opts)
-                vim.fn['CocAction']('fold', opts.args)
-            end, {nargs = '?'})
+        vim.api.nvim_create_user_command('Fold', function(opts)
+            vim.fn['CocAction']('fold', opts.args)
+        end, {nargs = '?'})
 
-            vim.api.nvim_create_user_command('OR', function()
-                vim.fn['CocAction']('runCommand', 'editor.action.organizeImport')
-            end, {})
+    vim.api.nvim_create_user_command('OR', function()
+        vim.fn['CocAction']('runCommand', 'editor.action.organizeImport')
+    end, {})
         end
     }
 }
