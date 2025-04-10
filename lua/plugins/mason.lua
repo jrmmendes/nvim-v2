@@ -69,7 +69,11 @@ return {
                         mode = 'symbol_text',
                         maxwidth = 50,
                     })
-            }
+            },
+            window = {
+                completion = cmp.config.window.bordered(),
+                documentation = cmp.config.window.bordered(),
+            },
         })
 
     -- Use cmdline & path source for ':' (if you want completion in command line)
@@ -89,6 +93,38 @@ return {
         require("mason").setup()
         require("mason-lspconfig").setup()
 
+        -- Configure diagnostics to show inline and in popup
+        vim.diagnostic.config({
+                virtual_text = {
+                    prefix = '●', -- Could be '■', '▎', 'x', etc
+                    spacing = 4,
+                    source = "if_many",
+                    severity = {
+                        min = vim.diagnostic.severity.HINT,
+                    },
+                },
+                float = {
+                    source = "always",
+                    border = "rounded",
+                    header = "",
+                    prefix = "",
+                },
+                signs = true,
+                underline = true,
+                update_in_insert = false,
+                severity_sort = true,
+            })
+
+        -- Customize the appearance of diagnostic floating windows
+        local orig_util_open_floating_preview = vim.lsp.util.open_floating_preview
+        function vim.lsp.util.open_floating_preview(contents, syntax, opts, ...)
+            opts = opts or {}
+            opts.border = opts.border or "rounded"
+            opts.max_width = opts.max_width or 80
+            opts.max_height = opts.max_height or 20
+            return orig_util_open_floating_preview(contents, syntax, opts, ...)
+        end
+
         -- Set up lspconfig with nvim-cmp capabilities
         local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
@@ -98,7 +134,10 @@ return {
             -- a dedicated handler.
             function (server_name) -- default handler (optional)
                 require("lspconfig")[server_name].setup {
-                    capabilities = capabilities  -- Add capabilities to each LSP
+                    capabilities = capabilities,  -- Add capabilities to each LSP
+                    flags = {
+                        debounce_text_changes = 150,
+                    },
                 }
             end,
             -- Next, you can provide a dedicated handler for specific servers.
@@ -129,8 +168,35 @@ return {
                     vim.keymap.set('n', '<space>f', function()
                         vim.lsp.buf.format { async = true }
                     end, opts)
-            end,
-        })
-end
-    }
+
+                -- Add a keymap to toggle diagnostic virtual text visibility
+                vim.keymap.set('n', '<space>dt', function()
+                    local current = vim.diagnostic.config().virtual_text
+                    vim.diagnostic.config({ virtual_text = not current })
+                end, opts)
+
+            -- Add a keymap to show diagnostics in a floating window
+            vim.keymap.set('n', '<space>d', function()
+                vim.diagnostic.open_float({ scope = "line" })
+            end, opts)
+
+        -- Show diagnostics automatically when hovering with cursor
+        vim.api.nvim_create_autocmd("CursorHold", {
+                buffer = ev.buf,
+                callback = function()
+                    local opts = {
+                        focusable = false,
+                        close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
+                        border = 'rounded',
+                        source = 'always',
+                        prefix = ' ',
+                        scope = 'cursor',
+                    }
+                    vim.diagnostic.open_float(nil, opts)
+                end
+            })
+    end,
+})
+    end
+}
 }
