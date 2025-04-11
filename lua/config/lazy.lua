@@ -37,11 +37,15 @@ vim.keymap.set('n', '<C-N>', ':bnext<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<C-P>', ':bprev<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<C-D>', ':bdelete %<CR>', { noremap = true, silent = true })
 
--- set current file as working directory
+-- set current file as working directory (with safeguards for special buffers)
 vim.api.nvim_create_autocmd("BufEnter", {
   pattern = "*",
   callback = function()
-    vim.cmd('lcd %:p:h')
+    -- Only change directory for normal buffers with real files
+    local buftype = vim.bo.buftype
+    if buftype == "" and vim.fn.expand("%:p") ~= "" then
+      vim.cmd('silent! lcd %:p:h')
+    end
   end
 })
 
@@ -53,7 +57,7 @@ require("lazy").setup({
   },
   -- Configure any other settings here. See the documentation for more details.
   -- colorscheme that will be used when installing plugins.
-  install = { colorscheme = { "gruvbox" } },
+  install = { colorscheme = { "darcula" } },
   -- automatically check for plugin updates
   checker = { enabled = true },
 })
