@@ -37,9 +37,9 @@ vim.opt.showcmd = true
 vim.opt.scrolloff = 12
 
 -- fzf remmaps
-vim.keymap.set('n', '<Leader>f', ':Files<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<Leader>c', ':Commands<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<Leader>h', ':History<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<C-ff>', ':Files<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<C-fc', ':Commands<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<C-fh', ':History<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<A-f>', ':Rg<CR>', { noremap = true, silent = true })
 
 -- mason
@@ -57,6 +57,9 @@ end, { desc = "Open Dooing for managing todos" })
 vim.keymap.set('n', '<C-N>', ':bnext<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<C-P>', ':bprev<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<C-D>', ':bdelete %<CR>', { noremap = true, silent = true })
+
+-- LSP keymaps
+vim.keymap.set('n', '<S-F6>', vim.lsp.buf.rename, { desc = "LSP Rename" })
 
 
 -- set current file as working directory (with safeguards for special buffers)
