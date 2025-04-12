@@ -40,11 +40,24 @@ vim.opt.scrolloff = 12
 vim.keymap.set('n', '<Leader>f', ':Files<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<Leader>c', ':Commands<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<Leader>h', ':History<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<A-f>', ':Rg<CR>', { noremap = true, silent = true })
+
+-- mason
+vim.keymap.set('n', '<Leader>m', ':Mason', { noremap = true, silent = true })
+
+-- Lazy
+vim.keymap.set('n', '<Leader>l', ':Lazy', { noremap = true, silent = true })
+
+-- Dooing
+vim.api.nvim_create_user_command("Todo", function()
+  vim.cmd("Dooing")
+end, { desc = "Open Dooing for managing todos" })
 
 -- buffer keymaps
 vim.keymap.set('n', '<C-N>', ':bnext<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<C-P>', ':bprev<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<C-D>', ':bdelete %<CR>', { noremap = true, silent = true })
+
 
 -- set current file as working directory (with safeguards for special buffers)
 vim.api.nvim_create_autocmd("BufEnter", {
