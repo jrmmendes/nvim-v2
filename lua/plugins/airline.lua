@@ -8,17 +8,14 @@ return {
         'ryanoasis/vim-devicons'
     },
     config = function()
-        -- Set guifont
-        vim.o.guifont = "FiraCode Nerd Sans:h13"
-
         -- Airline configuration
         vim.g.airline_powerline_fonts = 1
         vim.g.Powerline_symbols = 'unicode'
-	vim.g.gruvbox_contrast_dark = "hard"
-	vim.g.airline_theme="base16_gruvbox_dark_soft"
+        vim.g.gruvbox_contrast_dark = "hard"
+        vim.g.airline_theme="base16_gruvbox_dark_soft"
 
         -- Tabline extensions
-	vim.g['airline#extensions#tabline#enabled'] = 1
+        vim.g['airline#extensions#tabline#enabled'] = 1
         vim.g['airline#extensions#tabline#show_tab_nr'] = 1
         vim.g['airline#extensions#tabline#tab_nr_type'] = 2
         vim.g['airline#extensions#tabline#show_tab_type'] = 1

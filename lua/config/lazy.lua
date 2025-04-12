@@ -5,10 +5,10 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
   local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
   if vim.v.shell_error ~= 0 then
     vim.api.nvim_echo({
-      { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
-      { out, "WarningMsg" },
-      { "\nPress any key to exit..." },
-    }, true, {})
+        { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
+        { out, "WarningMsg" },
+        { "\nPress any key to exit..." },
+      }, true, {})
     vim.fn.getchar()
     os.exit(1)
   end
@@ -20,7 +20,11 @@ vim.opt.rtp:prepend(lazypath)
 -- This is also a good place to setup other settings (vim.opt)
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
-vim.opt.number = true             -- Show line numbers
+
+-- line numbers
+vim.opt.number = true             
+vim.opt.relativenumber = true
+
 vim.opt.showtabline = 0           -- Disable tabline
 vim.opt.autoindent = true         -- Auto indent new lines
 vim.opt.smartindent = true        -- Smart auto indenting
@@ -30,7 +34,12 @@ vim.opt.expandtab = true          -- Convert tabs to spaces
 vim.opt.textwidth = 80            -- Maximum width of text
 vim.opt.hidden = true 
 vim.opt.showcmd = true
-vim.opt.scrolloff = 5
+vim.opt.scrolloff = 12
+
+-- fzf remmaps
+vim.keymap.set('n', '<Leader>f', ':Files<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<Leader>c', ':Commands<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<Leader>h', ':History<CR>', { noremap = true, silent = true })
 
 -- buffer keymaps
 vim.keymap.set('n', '<C-N>', ':bnext<CR>', { noremap = true, silent = true })
@@ -39,27 +48,46 @@ vim.keymap.set('n', '<C-D>', ':bdelete %<CR>', { noremap = true, silent = true }
 
 -- set current file as working directory (with safeguards for special buffers)
 vim.api.nvim_create_autocmd("BufEnter", {
-  pattern = "*",
-  callback = function()
-    -- Only change directory for normal buffers with real files
-    local buftype = vim.bo.buftype
-    if buftype == "" and vim.fn.expand("%:p") ~= "" then
-      vim.cmd('silent! lcd %:p:h')
+    pattern = "*",
+    callback = function()
+      -- Only change directory for normal buffers with real files
+      local buftype = vim.bo.buftype
+      if buftype == "" and vim.fn.expand("%:p") ~= "" then
+        vim.cmd('silent! lcd %:p:h')
+      end
     end
-  end
-})
+  })
+
+-- force expandtabs behavior in yaml
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "*",
+    callback = function()
+      vim.opt_local.expandtab = true
+      vim.opt_local.tabstop = 2
+      vim.opt_local.shiftwidth = 2
+    end,
+  })
 
 -- Setup lazy.nvim
 require("lazy").setup({
-  spec = {
-    -- import your plugins
-    { import = "plugins" },
-  },
-  -- Configure any other settings here. See the documentation for more details.
-  -- colorscheme that will be used when installing plugins.
-  install = { colorscheme = { "darcula" } },
-  -- automatically check for plugin updates
-  checker = { enabled = true },
-})
+    spec = {
+      -- import your plugins
+      { import = "plugins" },
+    },
+    -- Configure any other settings here. See the documentation for more details.
+    -- colorscheme that will be used when installing plugins.
+    install = { colorscheme = { "darcula" } },
+    -- automatically check for plugin updates
+    checker = { enabled = true },
+  })
 
---vim.api.nvim_set_option("clipboard","unnamed")
+-- Enforce expandtab for all buffers
+vim.api.nvim_create_autocmd({ "BufEnter", "FileType" }, {
+    pattern = "*",
+    callback = function()
+      vim.bo.expandtab = true
+      vim.bo.tabstop = 2
+      vim.bo.shiftwidth = 2
+    end,
+  })
+
