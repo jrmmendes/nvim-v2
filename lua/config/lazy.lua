@@ -37,9 +37,9 @@ vim.opt.showcmd = true
 vim.opt.scrolloff = 12
 
 -- fzf remmaps
-vim.keymap.set('n', '<C-ff>', ':Files<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<C-fc', ':Commands<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<C-fh', ':History<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<Leader>z', ':Files<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<Leader>zc', ':Commands<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<Leader>zh', ':History<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<A-f>', ':Rg<CR>', { noremap = true, silent = true })
 
 -- mason
