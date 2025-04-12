@@ -92,6 +92,18 @@ return {
 
     -- Toggle Debugger UI
     vim.api.nvim_create_user_command("Debugger", function() dapui.toggle() end, { desc = "Toggle Debugger UI" })
+
+    -- Configure breakpoint icons
+    vim.fn.sign_define("DapBreakpoint", { text = "●", texthl = "DapBreakpoint", linehl = "", numhl = "" })
+    vim.fn.sign_define("DapLogPoint", { text = "◆", texthl = "DapLogPoint", linehl = "", numhl = "" })
+    vim.fn.sign_define("DapBreakpointRejected", { text = "◌", texthl = "DapBreakpointRejected", linehl = "", numhl = "" })
+    vim.fn.sign_define("DapBreakpointDisabled", { text = "◌", texthl = "DapBreakpointDisabled", linehl = "", numhl = "" })
+
+    -- Set highlight groups for red color
+    vim.cmd("highlight DapBreakpoint guifg=#FF0000")
+    vim.cmd("highlight DapLogPoint guifg=#FF0000")
+    vim.cmd("highlight DapBreakpointRejected guifg=#FF0000")
+    vim.cmd("highlight DapBreakpointDisabled guifg=#FF0000")
   end,
 }
 
