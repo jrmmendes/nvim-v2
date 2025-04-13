@@ -1,4 +1,4 @@
 return {
-    enabled = false,
-    'scrooloose/nerdtree'
+    enabled = true,
+    'scrooloose/nerdtree',
 }
