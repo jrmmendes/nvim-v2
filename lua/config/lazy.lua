@@ -37,16 +37,17 @@ vim.opt.showcmd = true
 vim.opt.scrolloff = 12
 
 -- fzf remmaps
-vim.keymap.set('n', '<Leader>z', ':Files<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<Leader>zc', ':Commands<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<Leader>zh', ':History<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<A-z>', ':Files<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<A-c>', ':Commands<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<A-h>', ':History<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<A-f>', ':Rg<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<A-t>', ':Tags<CR>', { noremap = true, silent = true })
 
 -- mason
-vim.keymap.set('n', '<Leader>m', ':Mason', { noremap = true, silent = true })
+vim.keymap.set('n', '<Leader>m', ':Mason<CR>', { noremap = true, silent = true })
 
 -- Lazy
-vim.keymap.set('n', '<Leader>l', ':Lazy', { noremap = true, silent = true })
+vim.keymap.set('n', '<Leader>l', ':Lazy<CR>', { noremap = true, silent = true })
 
 -- Dooing
 vim.api.nvim_create_user_command("Todo", function()
