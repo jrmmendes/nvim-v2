@@ -27,5 +27,8 @@ return {
         vim.g.airline_left_alt_sep = ''
         vim.g.airline_right_sep = ''
         vim.g.airline_right_alt_sep = ''
+
+        -- Fugitive statusline integration
+        vim.g.airline_fugitive='%{FugitiveStatusline()}'
     end
 }

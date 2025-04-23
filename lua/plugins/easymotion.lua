@@ -1,5 +1,6 @@
 return {
     'easymotion/vim-easymotion',
+    enabled=false,
     config = function()
         -- Set up key mappings for EasyMotion
         vim.g.EasyMotion_do_mapping = 0 -- Disable default mappings
