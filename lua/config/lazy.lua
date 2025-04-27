@@ -1,4 +1,6 @@
--- Bootstrap lazy.nvim
+--  ────────────────────────────────────────────────────────────────────────────
+--                                      LAZY.NVIM 
+--  ────────────────────────────────────────────────────────────────────────────
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
   local lazyrepo = "https://github.com/folke/lazy.nvim.git"
@@ -21,6 +23,11 @@ vim.opt.rtp:prepend(lazypath)
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 
+
+--  ────────────────────────────────────────────────────────────────────────────
+--                                      UI 
+--  ────────────────────────────────────────────────────────────────────────────
+
 -- line numbers
 vim.opt.number = true             
 vim.opt.relativenumber = true
@@ -35,13 +42,21 @@ vim.opt.textwidth = 80            -- Maximum width of text
 vim.opt.hidden = true 
 vim.opt.showcmd = true
 vim.opt.scrolloff = 12
+vim.o.guifont = "FiraCode Nerd Font:h13" 
 
--- fzf remmaps
+--  ────────────────────────────────────────────────────────────────────────────
+--                            REMAPS AND CUSTOM COMMANDS
+--  ────────────────────────────────────────────────────────────────────────────
+
+-- fzf
 vim.keymap.set('n', '<A-z>', ':Files<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<A-c>', ':Commands<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<A-h>', ':History<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<A-f>', ':Rg<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<A-t>', ':Tags<CR>', { noremap = true, silent = true })
+
+-- NERDTree
+vim.keymap.set('n', '<A-s>', ':NERDTreeToggle<CR>', { noremap = true, silent = true })
 
 -- mason
 vim.keymap.set('n', '<Leader>m', ':Mason<CR>', { noremap = true, silent = true })
@@ -63,7 +78,11 @@ vim.keymap.set('n', '<C-D>', ':bdelete %<CR>', { noremap = true, silent = true }
 vim.keymap.set('n', '<S-F6>', vim.lsp.buf.rename, { desc = "LSP Rename" })
 
 
--- set current file as working directory (with safeguards for special buffers)
+--  ────────────────────────────────────────────────────────────────────────────
+--                                 BUFFER HACKS 
+--  ────────────────────────────────────────────────────────────────────────────
+
+-- Set current file as working directory (with safeguards for special buffers)
 vim.api.nvim_create_autocmd("BufEnter", {
     pattern = "*",
     callback = function()
@@ -74,8 +93,18 @@ vim.api.nvim_create_autocmd("BufEnter", {
       end
     end
   })
+-- Enforce expandtab for all buffers
+vim.api.nvim_create_autocmd({ "BufEnter", "FileType" }, {
+    pattern = "*",
+    callback = function()
+      vim.bo.expandtab = true
+      vim.bo.tabstop = 2
+      vim.bo.shiftwidth = 2
+    end,
+  })
 
--- force expandtabs behavior in yaml
+
+-- Force expandtabs behavior in yaml
 vim.api.nvim_create_autocmd("FileType", {
     pattern = "*",
     callback = function()
@@ -97,14 +126,3 @@ require("lazy").setup({
     -- automatically check for plugin updates
     checker = { enabled = true },
   })
-
--- Enforce expandtab for all buffers
-vim.api.nvim_create_autocmd({ "BufEnter", "FileType" }, {
-    pattern = "*",
-    callback = function()
-      vim.bo.expandtab = true
-      vim.bo.tabstop = 2
-      vim.bo.shiftwidth = 2
-    end,
-  })
-
