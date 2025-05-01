@@ -1,4 +1,7 @@
 return {
-    enabled = true,
+    enabled = false,
     'scrooloose/nerdtree',
+    config = function()
+        vim.g.NERDTreeFileNodeDelimiter = ''
+    end,
 }
