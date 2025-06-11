@@ -1,202 +1,117 @@
 return {
-    { "rcarriga/nvim-dap-ui", dependencies = {"mfussenegger/nvim-dap", "nvim-neotest/nvim-nio"} },
-    { 'mfussenegger/nvim-lint' },
-    {
-        "williamboman/mason-lspconfig.nvim",
-        "neovim/nvim-lspconfig",
-    },
-    {
-        'stevearc/dressing.nvim',
-        opts = {},
-        event='VeryLazy'
-    },
-    -- Add nvim-cmp and its dependencies
-    {
-        'hrsh7th/nvim-cmp',
-        dependencies = {
-            'hrsh7th/cmp-nvim-lsp',
-            'hrsh7th/cmp-buffer',
-            'hrsh7th/cmp-path',
-            'hrsh7th/cmp-cmdline',
-            'L3MON4D3/LuaSnip',
-            'saadparwaiz1/cmp_luasnip',
-            'onsails/lspkind.nvim',  -- For VSCode-like icons
-        },
-        config = function()
-            local cmp = require('cmp')
-            local lspkind = require('lspkind')
-            local luasnip = require('luasnip')
+  -- Required for <C-f> widget behaviour (dressing.nvim)
+  -- This can be lazy-loaded as it's not critical for core LSP setup.
+  {
+    'stevearc/dressing.nvim',
+    opts = {},
+    event = 'VeryLazy'
+  },
 
-            cmp.setup({
-                    snippet = {
-                        expand = function(args)
-                            luasnip.lsp_expand(args.body)
-                        end,
-                    },
-                    mapping = cmp.mapping.preset.insert({
-                            ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-                            ['<C-f>'] = cmp.mapping.scroll_docs(4),
-                            ['<C-Space>'] = cmp.mapping.complete(),
-                            ['<C-e>'] = cmp.mapping.abort(),
-                            ['<CR>'] = cmp.mapping.confirm({ select = true }),
-                            ['<Tab>'] = cmp.mapping(function(fallback)
-                                if cmp.visible() then
-                                    cmp.select_next_item()
-                                elseif luasnip.expand_or_jumpable() then
-                                    luasnip.expand_or_jump()
-                                else
-                                    fallback()
-                                end
-                            end, { 'i', 's' }),
-                        ['<S-Tab>'] = cmp.mapping(function(fallback)
-                            if cmp.visible() then
-                                cmp.select_prev_item()
-                            elseif luasnip.jumpable(-1) then
-                                luasnip.jump(-1)
-                            else
-                                fallback()
-                            end
-                        end, { 'i', 's' }),
-                }),
-            sources = cmp.config.sources({
-                    { name = 'nvim_lsp' },
-                    { name = 'luasnip' },
-                    { name = 'buffer' },
-                    { name = 'path' },
-                }),
-            formatting = {
-                format = lspkind.cmp_format({
-                        mode = 'symbol_text',
-                        maxwidth = 50,
-                    })
-            },
-            window = {
-                completion = cmp.config.window.bordered(),
-                documentation = cmp.config.window.bordered(),
-            },
-        })
-
-    -- Use cmdline & path source for ':' (if you want completion in command line)
-        cmp.setup.cmdline(':', {
-                mapping = cmp.mapping.preset.cmdline(),
-                sources = cmp.config.sources({
-                        { name = 'path' }
-                    }, {
-                        { name = 'cmdline' }
-                    })
-            })
-    end
-},
-{
-    "williamboman/mason.nvim",
-    config = function()
-        require("mason").setup()
-        require("mason-lspconfig").setup()
-
-        -- Configure diagnostics to show inline and in popup
-        vim.diagnostic.config({
-                virtual_text = {
-                    prefix = '●', -- Could be '■', '▎', 'x', etc
-                    spacing = 4,
-                    source = "if_many",
-                    severity = {
-                        min = vim.diagnostic.severity.HINT,
-                    },
-                },
-                float = {
-                    source = "always",
-                    border = "single",
-                    header = "",
-                    prefix = "",
-                },
-                signs = true,
-                underline = true,
-                update_in_insert = false,
-                severity_sort = true,
-            })
-
-        -- Customize the appearance of diagnostic floating windows
-        local orig_util_open_floating_preview = vim.lsp.util.open_floating_preview
-        function vim.lsp.util.open_floating_preview(contents, syntax, opts, ...)
-            opts = opts or {}
-            opts.border = opts.border or "single"
-            opts.max_width = opts.max_width or 80
-            opts.max_height = opts.max_height or 20
-            return orig_util_open_floating_preview(contents, syntax, opts, ...)
-        end
-
-        -- Set up lspconfig with nvim-cmp capabilities
-        local capabilities = require('cmp_nvim_lsp').default_capabilities()
-
-        require("mason-lspconfig").setup_handlers {
-            -- The first entry (without a key) will be the default handler
-            -- and will be called for each installed server that doesn't have
-            -- a dedicated handler.
-            function (server_name) -- default handler (optional)
-                require("lspconfig")[server_name].setup {
-                    capabilities = capabilities,  -- Add capabilities to each LSP
-                    flags = {
-                        debounce_text_changes = 150,
-                    },
-                }
-            end,
-            -- Next, you can provide a dedicated handler for specific servers.
-            -- For example, a handler override for the `rust_analyzer`:
-            -- ["rust_analyzer"] = function ()
-                --     require("rust-tools").setup {}
-            -- end
+  -- Mason.nvim itself: Manages installation of LSP servers, formatters, linters, etc.
+  {
+    "mason-org/mason.nvim",
+    opts = {
+      ui = {
+        icons = {
+          package_installed = "✓",
+          package_pending = "➜",
+          package_uninstalled = "✗"
         }
+      }
+    },
+  },
 
-        -- Set up key mappings for LSP features
-        vim.api.nvim_create_autocmd('LspAttach', {
-                group = vim.api.nvim_create_augroup('UserLspConfig', {}),
-                callback = function(ev)
-                    -- Enable completion triggered by <c-x><c-o>
-                    vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
+  -- nvim-lspconfig: The core LSP client for Neovim.
+  -- This provides the `vim.lsp` API and the `lspconfig` table.
+  {
+    "neovim/nvim-lspconfig",
+    -- Load this when a buffer is read, which is early enough for LSP functionality.
+    event = "BufReadPost",
+  },
 
-                    -- Buffer local mappings
-                    local opts = { buffer = ev.buf }
-                    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
-                    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
-                    vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
-                    vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
-                    vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
-                    vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, opts)
-                    vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, opts)
-                    vim.keymap.set({ 'n', 'v' }, '<space>ca', vim.lsp.buf.code_action, opts)
-                    vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
-                    vim.keymap.set('n', '<space>f', function()
-                        vim.lsp.buf.format { async = true }
-                    end, opts)
+  -- mason-lspconfig.nvim: The bridge between Mason and nvim-lspconfig.
+  -- This plugin automates the setup of language servers installed by Mason using nvim-lspconfig.
+  {
+    "mason-org/mason-lspconfig.nvim",
+    -- Crucial: Explicitly pull from the 'main' branch to ensure the latest version with 'setup_handlers'.
+    branch = "main",
+    dependencies = {
+      "mason-org/mason.nvim",
+      "neovim/nvim-lspconfig",
+      -- Optional: For integrating LSP capabilities with nvim-cmp. Remove if not using nvim-cmp.
+      "hrsh7th/cmp-nvim-lsp",
+    },
+    -- The 'config' function runs after the plugin and its dependencies are loaded.
+    config = function()
+      local lspconfig = require('lspconfig')
+      local mason_lspconfig = require('mason-lspconfig')
 
-                -- Add a keymap to toggle diagnostic virtual text visibility
-                vim.keymap.set('n', '<space>dt', function()
-                    local current = vim.diagnostic.config().virtual_text
-                    vim.diagnostic.config({ virtual_text = not current })
-                end, opts)
+      -- Retrieve LSP capabilities. If nvim-cmp is installed, use its default capabilities.
+      local capabilities = vim.lsp.protocol.make_client_capabilities()
+      local cmp_nvim_lsp_ok, cmp_nvim_lsp = pcall(require, 'cmp_nvim_lsp')
+      if cmp_nvim_lsp_ok then
+        capabilities = cmp_nvim_lsp.default_capabilities(capabilities)
+      end
 
-            -- Add a keymap to show diagnostics in a floating window
-            vim.keymap.set('n', '<space>d', function()
-                vim.diagnostic.open_float({ scope = "line" })
-            end, opts)
+      -- Configure mason-lspconfig to set up language servers using nvim-lspconfig's `setup` method.
+      -- This function is called for each language server Mason manages.
+      mason_lspconfig.setup {
+        function(server_name)
+          lspconfig[server_name].setup {
+            capabilities = capabilities,
+            on_attach = function(client, bufnr)
+              -- This `on_attach` function is executed when an LSP server successfully
+              -- attaches to a buffer. It's the ideal place to define buffer-local keymaps for LSP actions.
 
-        -- Show diagnostics automatically when hovering with cursor
-        vim.api.nvim_create_autocmd("CursorHold", {
-                buffer = ev.buf,
-                callback = function()
-                    local opts = {
-                        focusable = false,
-                        close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
-                        border = 'rounded',
-                        source = 'always',
-                        prefix = ' ',
-                        scope = 'cursor',
-                    }
-                    vim.diagnostic.open_float(nil, opts)
-                end
-            })
-    end,
-})
-    end
-}
+              -- Ensure completion provider is fully enabled if the server supports it
+              if client.server_capabilities.completionProvider then
+                client.server_capabilities.completionProvider.resolveProvider = true
+                client.server_capabilities.completionProvider.triggerCharacters = { '.', ':', '/', '\\', '-', '_' }
+              end
+
+              -- LSP Keybindings (buffer-local, apply only when LSP is active for the buffer)
+              local opts = { noremap = true, silent = true }
+
+              -- Go to definition: THE 'gd' ACTION
+              vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
+              vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
+              vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
+              vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
+              vim.api.nvim_buf_set_keymap(bufnr, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
+              vim.api.nvim_buf_set_keymap(bufnr, 'n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
+              vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
+              vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
+
+              -- Diagnostic navigation keymaps
+              vim.api.nvim_buf_set_keymap(bufnr, 'n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', opts)
+              vim.api.nvim_buf_set_keymap(bufnr, 'n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', opts)
+              vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>q', '<cmd>lua vim.diagnostic.setloclist()<CR>', opts)
+            end,
+          }
+        end,
+      }
+
+      -- Tell mason-lspconfig which language servers to ensure are installed by Mason.
+      mason_lspconfig.setup {
+        ensure_installed = { "ts_ls", "biome", "lua_ls" },
+        -- Add any other language servers you want Mason to manage here.
+      }
+
+      -- Configure Neovim's built-in diagnostics appearance
+      vim.diagnostic.config {
+        virtual_text = true,
+        signs = true,
+        update_in_insert = false,
+        severity_sort = true,
+        float = {
+          focusable = false,
+          style = "minimal",
+          border = "rounded",
+          source = "always",
+          header = "",
+          prefix = "",
+        },
+      }
+    end, -- End of 'config' function for mason-lspconfig.nvim
+  },
 }

@@ -56,7 +56,7 @@ vim.keymap.set('n', '<A-f>', ':Rg<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<A-t>', ':Tags<CR>', { noremap = true, silent = true })
 
 -- NERDTree
-vim.keymap.set('n', '<A-s>', ':NERDTreeToggle<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<A-s>', ':NvimTreeToggle<CR>', { noremap = true, silent = true })
 
 -- mason
 vim.keymap.set('n', '<Leader>m', ':Mason<CR>', { noremap = true, silent = true })
@@ -116,17 +116,59 @@ vim.api.nvim_create_autocmd("FileType", {
 
 -- Setup lazy.nvim
 require("lazy").setup({
-    spec = {
-      -- import your plugins
-      { import = "plugins" },
-    },
-    -- Configure any other settings here. See the documentation for more details.
-    -- colorscheme that will be used when installing plugins.
-    install = { colorscheme = { "darcula" } },
-    -- automatically check for plugin updates
-    checker = { enabled = true },
-  })
+  spec = {
+    -- Core
+    { import = "plugins/mason" },
+    { import = "plugins/nvim-treesitter" },
+    { import = "plugins/nvim-cmp" },
+
+    -- themes and schemas
+    { import = "plugins/gruvbox" },
+    { import = "plugins/colorschemes" },
+    { import = "plugins/vim-css-color" },
+
+    -- editor functionality
+    { import = "plugins/autoclose" },
+    { import = "plugins/indent" },
+    { import = "plugins/vim-auto-save" },
+    { import = "plugins/surround" },
+    { import = "plugins/vim-polyglot" },
+
+    -- UI
+    { import = "plugins/mini" },
+    { import = "plugins/fzf" },
+    { import = "plugins/startify" },
+    { import = "plugins/pretty-hover" },
+    { import = "plugins/vim-gitgutter" },
+    { import = "plugins/airline" },
+    --{ import = "plugins/fidget" },
+
+    { import = "plugins/dap" },
+    { import = "plugins/nvim-tree" },
+    { import = "plugins/goyo" },
+    { import = "plugins/web-tools" }, 
+    { import = "plugins/diagnostic-window" }, 
+    { import = "plugins/dadbob" },
+    { import = "plugins/bmessages" },
+
+    -- Requires docker and lazy docker setup
+    --{ import = "plugins/lazydocker" },
+
+    --{ import = "plugins/lazydev" },
+    --{ import = "plugins/lazyclip" },
+
+    -- Managers
+
+    -- AI
+    --{ import = "plugins/llm-ls" },
+    --{ import = "plugins/codecompanion" },
+  },
+  -- Configure any other settings here. See the documentation for more details.
+  -- colorscheme that will be used when installing plugins.
+  install = { colorscheme = { "darcula" } },
+  -- automatically check for plugin updates
+  checker = { enabled = true },
+})
 --  ────────────────────────────────────────────────────────────────────────────
 --                              FLOAT WINDOWN BORDER 
 --  ────────────────────────────────────────────────────────────────────────────
-
