@@ -120,7 +120,7 @@ require("lazy").setup({
     -- Core
     { import = "plugins/mason" },
     { import = "plugins/nvim-treesitter" },
-    { import = "plugins/nvim-cmp" },
+    -- { import = "plugins/nvim-cmp" },
 
     -- themes and schemas
     { import = "plugins/gruvbox" },
@@ -146,10 +146,14 @@ require("lazy").setup({
     { import = "plugins/dap" },
     { import = "plugins/nvim-tree" },
     { import = "plugins/goyo" },
-    { import = "plugins/web-tools" }, 
-    { import = "plugins/diagnostic-window" }, 
+    { import = "plugins/web-tools" },
+    { import = "plugins/diagnostic-window" },
     { import = "plugins/dadbob" },
     { import = "plugins/bmessages" },
+
+    -- Debugger
+
+    { import = "plugins/dap" },
 
     -- Requires docker and lazy docker setup
     --{ import = "plugins/lazydocker" },
