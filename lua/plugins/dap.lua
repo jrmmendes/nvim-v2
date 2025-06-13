@@ -1,5 +1,14 @@
 return {
   {
+    'Weissle/persistent-breakpoints.nvim',
+    enabled = false,
+    config = function()
+      require('persistent-breakpoints').setup{
+        load_breakpoints_event = { "BufReadPost" }
+      }
+    end
+  },
+  {
     "szw/vim-maximizer",
     cmd = "MaximizerToggle",
   },
@@ -123,10 +132,16 @@ return {
       -- ╭──────────────────────────────────────────────────────────╮
       -- │ Icons                                                    │
       -- ╰──────────────────────────────────────────────────────────╯
-      vim.fn.sign_define("DapBreakpoint", { text = "🔵", texthl = "", linehl = "", numhl = "" })
-      vim.fn.sign_define("DapBreakpointRejected", { text = "🔴", texthl = "", linehl = "", numhl = "" })
-      vim.fn.sign_define("DapConditionalBreakpoint", { text = "🟡", texthl = "", linehl = "", numhl = "" })
-      vim.fn.sign_define("DapStopped", { text = "🟢", texthl = "", linehl = "", numhl = "" })
+
+      vim.api.nvim_set_hl(0, "white",   { fg = "#FFFFFF" })
+      vim.api.nvim_set_hl(0, "red",  { fg = "#F23057" })
+      vim.api.nvim_set_hl(0, "orange", { fg = "#f09000" })
+
+      vim.fn.sign_define('DapBreakpoint',          { text='⏺', texthl='white',   linehl='DapBreakpoint', numhl='DapBreakpoint' })
+      vim.fn.sign_define('DapBreakpointCondition', { text='⏺', texthl='white',   linehl='DapBreakpoint', numhl='DapBreakpoint' })
+      vim.fn.sign_define('DapBreakpointRejected',  { text='🞊', texthl='orange', linehl='DapBreakpoint', numhl='DapBreakpoint' })
+      vim.fn.sign_define('DapStopped',             { text='⏺', texthl='red',  linehl='DapBreakpoint', numhl='DapBreakpoint' })
+      vim.fn.sign_define('DapLogPoint',            { text='⏺', texthl='red', linehl='DapBreakpoint', numhl='DapBreakpoint' })
 
       local exts = {
         "javascript",
