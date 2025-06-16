@@ -49,11 +49,10 @@ vim.o.guifont = "FiraCode Nerd Font:h13"
 --  ────────────────────────────────────────────────────────────────────────────
 
 -- fzf
-vim.keymap.set('n', '<A-z>', ':Files<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<A-c>', ':Commands<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<A-h>', ':History<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<A-f>', ':Rg<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<A-t>', ':Tags<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<A-z>', ':FzfLua files<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<A-c>', ':FzfLua commands<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<A-h>', ':FzfLua search_history<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<A-f>', ':FzfLua<CR>', { noremap = true, silent = true })
 
 -- NERDTree
 vim.keymap.set('n', '<A-s>', ':NvimTreeToggle<CR>', { noremap = true, silent = true })
@@ -141,7 +140,6 @@ require("lazy").setup({
     { import = "plugins/pretty-hover" },
     { import = "plugins/vim-gitgutter" },
     { import = "plugins/airline" },
-    --{ import = "plugins/fidget" },
 
     { import = "plugins/dap" },
     { import = "plugins/nvim-tree" },
@@ -161,11 +159,7 @@ require("lazy").setup({
     --{ import = "plugins/lazydev" },
     --{ import = "plugins/lazyclip" },
 
-    -- Managers
-
-    -- AI
-    --{ import = "plugins/llm-ls" },
-    --{ import = "plugins/codecompanion" },
+    { import = "plugins/codecompanion"}
   },
   -- Configure any other settings here. See the documentation for more details.
   -- colorscheme that will be used when installing plugins.
