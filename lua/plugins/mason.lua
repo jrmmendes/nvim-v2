@@ -198,5 +198,35 @@ return {
       end,
     })
     end
-  }
+  },
+  -- Add conform.nvim for formatting, integrated with mason
+  {
+    "stevearc/conform.nvim",
+    dependencies = { "williamboman/mason.nvim" },
+    opts = {
+      -- Use Mason to manage formatter installations
+      formatters_by_ft = {
+        lua = { "stylua" },
+        python = { "black" },
+        javascript = { "prettier" },
+        typescript = { "prettier" },
+        json = { "prettier" },
+        yaml = { "prettier" },
+        markdown = { "prettier" },
+        -- Add more filetypes and formatters as needed
+      },
+      -- Automatically use formatters installed by mason
+      format_on_save = {
+        lsp_fallback = true,
+        timeout_ms = 500,
+      },
+    },
+    config = function(_, opts)
+      require("conform").setup(opts)
+      -- Optionally, set up a keymap for manual formatting
+      vim.keymap.set({"n", "v"}, "<leader>cf", function()
+        require("conform").format({ async = true, lsp_fallback = true })
+      end, { desc = "Format with conform" })
+    end,
+  },
 }

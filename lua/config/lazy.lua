@@ -55,7 +55,10 @@ vim.keymap.set('n', '<A-h>', ':FzfLua search_history<CR>', { noremap = true, sil
 vim.keymap.set('n', '<A-f>', ':FzfLua<CR>', { noremap = true, silent = true })
 
 -- NERDTree
-vim.keymap.set('n', '<A-s>', ':NvimTreeToggle<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<A-s>', ':NvimTreeToggle .<CR>', { noremap = true, silent = true })
+
+-- NERDTree
+vim.keymap.set('n', '<A-d>', ':DiffviewToggle<CR>', { noremap = true, silent = true })
 
 -- mason
 vim.keymap.set('n', '<Leader>m', ':Mason<CR>', { noremap = true, silent = true })
@@ -165,7 +168,7 @@ require("lazy").setup({
   -- colorscheme that will be used when installing plugins.
   install = { colorscheme = { "darcula" } },
   -- automatically check for plugin updates
-  checker = { enabled = true },
+  checker = { enabled = false },
 })
 --  ────────────────────────────────────────────────────────────────────────────
 --                              FLOAT WINDOWN BORDER 
