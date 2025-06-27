@@ -1,5 +1,5 @@
 return {
-  { "rcarriga/nvim-dap-ui", dependencies = {"mfussenegger/nvim-dap", "nvim-neotest/nvim-nio"} },
+  { "rcarriga/nvim-dap-ui",  dependencies = { "mfussenegger/nvim-dap", "nvim-neotest/nvim-nio" } },
   { 'mfussenegger/nvim-lint' },
   {
     "williamboman/mason-lspconfig.nvim",
@@ -8,7 +8,7 @@ return {
   {
     'stevearc/dressing.nvim',
     opts = {},
-    event='VeryLazy'
+    event = 'VeryLazy'
   },
   -- Add nvim-cmp and its dependencies
   {
@@ -20,7 +20,7 @@ return {
       'hrsh7th/cmp-cmdline',
       'L3MON4D3/LuaSnip',
       'saadparwaiz1/cmp_luasnip',
-      'onsails/lspkind.nvim',  -- For VSCode-like icons
+      'onsails/lspkind.nvim', -- For VSCode-like icons
     },
     config = function()
       local cmp = require('cmp')
@@ -28,73 +28,73 @@ return {
       local luasnip = require('luasnip')
 
       cmp.setup({
-          snippet = {
-            expand = function(args)
-              luasnip.lsp_expand(args.body)
-            end,
-          },
-          mapping = cmp.mapping.preset.insert({
-              ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-              ['<C-f>'] = cmp.mapping.scroll_docs(4),
-              ['<C-Space>'] = cmp.mapping.complete(),
-              ['<C-e>'] = cmp.mapping.abort(),
-              ['<CR>'] = cmp.mapping.confirm({ select = true }),
-              ['<Tab>'] = cmp.mapping(function(fallback)
-                if cmp.visible() then
-                  cmp.select_next_item()
-                elseif luasnip.expand_or_jumpable() then
-                  luasnip.expand_or_jump()
-                else
-                  fallback()
-                end
-              end, { 'i', 's' }),
-            ['<S-Tab>'] = cmp.mapping(function(fallback)
-              if cmp.visible() then
-                cmp.select_prev_item()
-              elseif luasnip.jumpable(-1) then
-                luasnip.jump(-1)
-              else
-                fallback()
-              end
-            end, { 'i', 's' }),
+        snippet = {
+          expand = function(args)
+            luasnip.lsp_expand(args.body)
+          end,
+        },
+        mapping = cmp.mapping.preset.insert({
+          ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+          ['<C-f>'] = cmp.mapping.scroll_docs(4),
+          ['<C-Space>'] = cmp.mapping.complete(),
+          ['<C-e>'] = cmp.mapping.abort(),
+          ['<CR>'] = cmp.mapping.confirm({ select = true }),
+          ['<Tab>'] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_next_item()
+            elseif luasnip.expand_or_jumpable() then
+              luasnip.expand_or_jump()
+            else
+              fallback()
+            end
+          end, { 'i', 's' }),
+          ['<S-Tab>'] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_prev_item()
+            elseif luasnip.jumpable(-1) then
+              luasnip.jump(-1)
+            else
+              fallback()
+            end
+          end, { 'i', 's' }),
         }),
-      sources = cmp.config.sources({
+        sources = cmp.config.sources({
           { name = 'nvim_lsp' },
           { name = 'luasnip' },
           { name = 'buffer' },
           { name = 'path' },
         }),
-      formatting = {
-        format = lspkind.cmp_format({
+        formatting = {
+          format = lspkind.cmp_format({
             mode = 'symbol_text',
             maxwidth = 50,
           })
-      },
-      window = {
-        completion = cmp.config.window.bordered(),
-        documentation = cmp.config.window.bordered(),
-      },
-    })
+        },
+        window = {
+          completion = cmp.config.window.bordered(),
+          documentation = cmp.config.window.bordered(),
+        },
+      })
 
-  -- Use cmdline & path source for ':' (if you want completion in command line)
-    cmp.setup.cmdline(':', {
+      -- Use cmdline & path source for ':' (if you want completion in command line)
+      cmp.setup.cmdline(':', {
         mapping = cmp.mapping.preset.cmdline(),
         sources = cmp.config.sources({
-            { name = 'path' }
-          }, {
-            { name = 'cmdline' }
-          })
+          { name = 'path' }
+        }, {
+          { name = 'cmdline' }
+        })
       })
-  end
-},
-{
-  "williamboman/mason.nvim",
-  config = function()
-    require("mason").setup()
-    require("mason-lspconfig").setup()
+    end
+  },
+  {
+    "williamboman/mason.nvim",
+    config = function()
+      require("mason").setup()
+      require("mason-lspconfig").setup()
 
-    -- Configure diagnostics to show inline and in popup
-    vim.diagnostic.config({
+      -- Configure diagnostics to show inline and in popup
+      vim.diagnostic.config({
         virtual_text = {
           prefix = '●', -- Could be '■', '▎', 'x', etc
           spacing = 4,
@@ -115,40 +115,40 @@ return {
         severity_sort = true,
       })
 
-    -- Customize the appearance of diagnostic floating windows
-    local orig_util_open_floating_preview = vim.lsp.util.open_floating_preview
-    function vim.lsp.util.open_floating_preview(contents, syntax, opts, ...)
-      opts = opts or {}
-      opts.border = opts.border or "single"
-      opts.max_width = opts.max_width or 80
-      opts.max_height = opts.max_height or 20
-      return orig_util_open_floating_preview(contents, syntax, opts, ...)
-    end
+      -- Customize the appearance of diagnostic floating windows
+      local orig_util_open_floating_preview = vim.lsp.util.open_floating_preview
+      function vim.lsp.util.open_floating_preview(contents, syntax, opts, ...)
+        opts = opts or {}
+        opts.border = opts.border or "single"
+        opts.max_width = opts.max_width or 80
+        opts.max_height = opts.max_height or 20
+        return orig_util_open_floating_preview(contents, syntax, opts, ...)
+      end
 
-    -- Set up lspconfig with nvim-cmp capabilities
-    local capabilities = require('cmp_nvim_lsp').default_capabilities()
+      -- Set up lspconfig with nvim-cmp capabilities
+      local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
-    require("mason-lspconfig").setup {
-      -- The first entry (without a key) will be the default handler
-      -- and will be called for each installed server that doesn't have
-      -- a dedicated handler.
-      function (server_name) -- default handler (optional)
-        require("lspconfig")[server_name].setup {
-          capabilities = capabilities,  -- Add capabilities to each LSP
-          flags = {
-            debounce_text_changes = 150,
-          },
-        }
-      end,
-      -- Next, you can provide a dedicated handler for specific servers.
-      -- For example, a handler override for the `rust_analyzer`:
-      -- ["rust_analyzer"] = function ()
+      require("mason-lspconfig").setup {
+        -- The first entry (without a key) will be the default handler
+        -- and will be called for each installed server that doesn't have
+        -- a dedicated handler.
+        function(server_name)            -- default handler (optional)
+          require("lspconfig")[server_name].setup {
+            capabilities = capabilities, -- Add capabilities to each LSP
+            flags = {
+              debounce_text_changes = 150,
+            },
+          }
+        end,
+        -- Next, you can provide a dedicated handler for specific servers.
+        -- For example, a handler override for the `rust_analyzer`:
+        -- ["rust_analyzer"] = function ()
         --     require("rust-tools").setup {}
-      -- end
-    }
+        -- end
+      }
 
-    -- Set up key mappings for LSP features
-    vim.api.nvim_create_autocmd('LspAttach', {
+      -- Set up key mappings for LSP features
+      vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('UserLspConfig', {}),
         callback = function(ev)
           -- Enable completion triggered by <c-x><c-o>
@@ -169,19 +169,19 @@ return {
             vim.lsp.buf.format { async = true }
           end, opts)
 
-        -- Add a keymap to toggle diagnostic virtual text visibility
-        vim.keymap.set('n', '<space>dt', function()
-          local current = vim.diagnostic.config().virtual_text
-          vim.diagnostic.config({ virtual_text = not current })
-        end, opts)
+          -- Add a keymap to toggle diagnostic virtual text visibility
+          vim.keymap.set('n', '<space>dt', function()
+            local current = vim.diagnostic.config().virtual_text
+            vim.diagnostic.config({ virtual_text = not current })
+          end, opts)
 
-        -- Add a keymap to show diagnostics in a floating window
-        vim.keymap.set('n', '<space>d', function()
-          vim.diagnostic.open_float({ scope = "line" })
-        end, opts)
+          -- Add a keymap to show diagnostics in a floating window
+          vim.keymap.set('n', '<space>d', function()
+            vim.diagnostic.open_float({ scope = "line" })
+          end, opts)
 
-        -- Show diagnostics automatically when hovering with cursor
-        vim.api.nvim_create_autocmd("CursorHold", {
+          -- Show diagnostics automatically when hovering with cursor
+          vim.api.nvim_create_autocmd("CursorHold", {
             buffer = ev.buf,
             callback = function()
               local opts = {
@@ -195,8 +195,8 @@ return {
               vim.diagnostic.open_float(nil, opts)
             end
           })
-      end,
-    })
+        end,
+      })
     end
   },
   -- Add conform.nvim for formatting, integrated with mason
@@ -224,7 +224,7 @@ return {
     config = function(_, opts)
       require("conform").setup(opts)
       -- Optionally, set up a keymap for manual formatting
-      vim.keymap.set({"n", "v"}, "<leader>cf", function()
+      vim.keymap.set({ "n", "v" }, "<leader>cf", function()
         require("conform").format({ async = true, lsp_fallback = true })
       end, { desc = "Format with conform" })
     end,
