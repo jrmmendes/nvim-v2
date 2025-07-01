@@ -7,19 +7,19 @@ return {
       "ibhagwan/fzf-lua", -- Add fzf-lua for enhanced FZF UI
     },
     "olimorris/codecompanion.nvim",
-    config = function ()
+    config = function()
       require('codecompanion').setup {
         strategies = {
-            chat = {
-                slash_commands = {
-                    ["file"] = {
-                        opts = {
-                            provider = "fzf_lua",
-                            contains_code = true
-                        }
-                    }
+          chat = {
+            slash_commands = {
+              ["file"] = {
+                opts = {
+                  provider = "fzf_lua",
+                  contains_code = true
                 }
+              }
             }
+          }
         },
         display = {
           action_pallete = {
@@ -48,4 +48,3 @@ return {
     end
   }
 }
-

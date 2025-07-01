@@ -55,9 +55,6 @@ vim.o.guifont = "FiraCode Nerd Font:h13"
 vim.keymap.set('n', '<A-f>', ':FzfLua<CR>', { noremap = true, silent = true })
 
 -- NERDTree
-vim.keymap.set('n', '<A-s>', ':NvimTreeToggle .<CR>', { noremap = true, silent = true })
-
--- NERDTree
 vim.keymap.set('n', '<A-d>', ':DiffviewToggle<CR>', { noremap = true, silent = true })
 
 -- mason
