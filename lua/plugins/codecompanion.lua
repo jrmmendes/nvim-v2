@@ -1,5 +1,8 @@
 return {
-  { "github/copilot.vim" },
+  { 
+    enabled = false,
+    "github/copilot.vim",
+  },
   {
     dependencies = {
       "nvim-lua/plenary.nvim",

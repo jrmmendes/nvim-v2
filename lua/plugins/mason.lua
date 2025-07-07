@@ -215,11 +215,6 @@ return {
         markdown = { "prettier" },
         -- Add more filetypes and formatters as needed
       },
-      -- Automatically use formatters installed by mason
-      format_on_save = {
-        lsp_fallback = true,
-        timeout_ms = 500,
-      },
     },
     config = function(_, opts)
       require("conform").setup(opts)
