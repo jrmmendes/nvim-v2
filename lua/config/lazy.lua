@@ -138,6 +138,7 @@ require("lazy").setup({
     { import = "plugins/pretty-hover" },
     { import = "plugins/vim-gitgutter" },
     { import = "plugins/airline" },
+    { import = "plugins/jester" },
 
     { import = "plugins/dap" },
     --{ import = "plugins/nvim-tree" },
