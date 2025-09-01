@@ -111,6 +111,10 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+vim.keymap.set('n', '<leader>rn', function()
+  vim.lsp.buf.rename()
+end, { desc = 'LSP: Rename symbol' })
+
 -- Setup lazy.nvim
 require("lazy").setup({
   spec = {
@@ -169,7 +173,6 @@ require("lazy").setup({
   checker = { enabled = false },
 })
 
--- LSP keymaps
 local prev = { new_name = "", old_name = "" } -- Prevents duplicate events
 vim.api.nvim_create_autocmd("User", {
   pattern = "NvimTreeSetup",
