@@ -45,8 +45,10 @@ This repo is set up for [OpenCode](https://opencode.ai) agents:
 - `.agents/skills/nvim-*/SKILL.md` — on-demand procedures for adding plugins,
   keymaps, LSP, options/autocmds, debugging, local custom plugins and read-only
   config questions.
-- `.opencode/tools/new-custom-plugin.ts` — scaffolds a local plugin
-  (`core/plugins/<name>.lua` + `core/custom/<name>/`); requires Node 23+.
+- `.opencode/tools/new-custom-plugin.ts` — native OpenCode custom tool
+  (`new-custom-plugin`) that scaffolds a local plugin (`core/plugins/<name>.lua`
+  + `core/custom/<name>/`); its `@opencode-ai/plugin` dependency is declared in
+  `.opencode/package.json`.
 
 ## Install
 

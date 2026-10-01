@@ -1,6 +1,6 @@
 ---
 name: nvim-create-plugin
-description: How to create local ("custom") plugins in this Neovim config — the core/custom + core/plugins layout, the Lua collector that wires their lazy.nvim specs, the minimal setup(opts) template, and the Node bootstrap that scaffolds them. Use when the user wants to build their own plugin, replace a third-party plugin with a local one, or scaffold a new custom plugin.
+description: How to create local ("custom") plugins in this Neovim config — the core/custom + core/plugins layout, the Lua collector that wires their lazy.nvim specs, the minimal setup(opts) template, and the native OpenCode custom tool that scaffolds them. Use when the user wants to build their own plugin, replace a third-party plugin with a local one, or scaffold a new custom plugin.
 compatibility: opencode
 ---
 
@@ -34,18 +34,24 @@ spec = vim.list_extend({ { import = "plugins" } }, require("config.custom").coll
 
 ## Scaffolding
 
-Requires **Node 23+** (native TypeScript type-stripping; no build step):
+A native OpenCode custom tool lives at `.opencode/tools/new-custom-plugin.ts`
+(tool name `new-custom-plugin`) and scaffolds the two files:
 
-```bash
-node .opencode/tools/new-custom-plugin.ts <name>
-```
-
+- Call it with `name` (required) and optionally `force = true`.
 - `<name>` must match `[a-z][a-z0-9-]*`; the folder is the module name, so it is
   required as `require("<name>")`.
 - Refuses to overwrite an existing `core/custom/<name>/` or
-  `core/plugins/<name>.lua` unless `--force` is passed.
+  `core/plugins/<name>.lua` unless `force = true`.
 - Generates the spec (`event = { "VeryLazy" }, opts = {}`) and the minimal
   entrypoint below.
+
+It imports `@opencode-ai/plugin`, declared in `.opencode/package.json`; OpenCode
+runs `bun install` at startup, so the dependency resolves from
+`.opencode/node_modules`. Never place a plain CLI script here — OpenCode imports
+every `*.ts` in `.opencode/tools/` on startup.
+
+If the tool is unavailable to the current agent, create the two files by hand
+following the layout above.
 
 ## Minimal template
 
@@ -72,8 +78,8 @@ than inventing its own subsystem.
 ## Procedure
 
 1. Read `AGENTS.md`, `lua/config/custom.lua` and `lua/config/lazy.lua`.
-2. Scaffold with the bootstrap, or create the two files by hand following the
-   layout above.
+2. Scaffold with the `new-custom-plugin` tool, or create the two files by hand
+   following the layout above.
 3. Implement the plugin under `core/custom/<name>/lua/<name>/`.
 4. Validate: `nvim --headless "+lua vim.cmd('qa')"` exits 0, and the plugin shows
    up in `:Lazy`.
