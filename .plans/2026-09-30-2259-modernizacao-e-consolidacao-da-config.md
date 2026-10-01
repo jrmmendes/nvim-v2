@@ -1,3 +1,8 @@
+---
+implemented: true
+implemented_at: 2026-10-01
+---
+
 # Plano persistido
 
 - Data/hora: 2026-09-30 22:59 (GMT-3)

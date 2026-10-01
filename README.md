@@ -31,6 +31,17 @@ Neovim 0.12+ and its native APIs (`vim.lsp.config`, `vim.snippet`, `vim.uv`).
   on the `main` branch.
 - **Colorscheme**: [gruvbox.nvim](https://github.com/ellisonleao/gruvbox.nvim).
 
+## AI agents
+
+This repo is set up for [OpenCode](https://opencode.ai) agents:
+
+- [`AGENTS.md`](AGENTS.md) — always-active rules, architecture, conventions and a
+  task → skill routing map.
+- `.opencode/agents/build-nvim.md` — the `Build:Nvim` primary agent: classifies a
+  request, picks a skill and delegates execution to a subagent.
+- `.agents/skills/nvim-*/SKILL.md` — on-demand procedures for adding plugins,
+  keymaps, LSP, options/autocmds, debugging and read-only config questions.
+
 ## Install
 
 ```bash
