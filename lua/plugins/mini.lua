@@ -1,43 +1,20 @@
 return {
-    enabled = true,
-    'echasnovski/mini.nvim',
+  {
+    "echasnovski/mini.nvim",
     version = false,
     config = function()
-        require('mini.pairs').setup()
-        require('mini.map').setup()
-        require('mini.comment').setup()
-        vim.api.nvim_create_autocmd('FileType', {
-            pattern = { 
-                'typescript', 
-                'typescriptreact', 
-                'javascript', 
-                'javascriptreact', 
-                'lua', 
-                'markdown', 
-                'json', 
-                'yaml', 
-                'go', 
-                'python', 
-                'html', 
-                'css',
-                'Makefile',
-                'sh',
-                'bash',
-                'dockerfile',
-                'c',
-                'cpp',
-                'rust',
-                'java',
-                'php',
-                'ruby',
-                'perl',
-                'scss',
-            },
-            callback = function()
-                if package.loaded['mini.map'] then
-                    require('mini.map').open()
-                end
-            end,
-        })
-    end
+      require("mini.pairs").setup()
+      require("mini.surround").setup()
+      require("mini.map").setup()
+      vim.keymap.set("n", "<leader>mm", require("mini.map").toggle, { desc = "Toggle minimap" })
+    end,
+  },
+  {
+    "echasnovski/mini.icons",
+    lazy = true,
+    opts = {},
+    init = function()
+      require("mini.icons").mock_nvim_web_devicons()
+    end,
+  },
 }

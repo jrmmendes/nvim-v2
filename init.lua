@@ -1,1 +1,5 @@
+require("config.options")
+require("config.keymaps")
+require("config.autocmds")
+require("config.statusline").setup()
 require("config.lazy")

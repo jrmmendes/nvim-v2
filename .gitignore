@@ -1,0 +1,11 @@
+# Backup files
+*.bak
+*.bkp
+
+# ctags artifacts
+tags
+lua/config/tags
+
+# Local notes / plans
+.plans/
+.playwright-mcp/

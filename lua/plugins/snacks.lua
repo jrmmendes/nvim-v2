@@ -1,46 +1,50 @@
 return {
-    "folke/snacks.nvim",
-    priority = 1000,
-    lazy = false,
-    ---@type snacks.Config
-    opts = {
-        -- your configuration comes here
-        -- or leave it empty to use the default settings
-        -- refer to the configuration section below
-        bigfile = { enabled = true },
-        dashboard = { enabled = true },
-        explorer = { enabled = true },
-        indent = { enabled = true },
-        input = {
-            icon = " ",
-            icon_hl = "SnacksInputIcon",
-            icon_pos = "left",
-            prompt_pos = "title",
-            win = { style = "input" },
-            expand = true,
+  "folke/snacks.nvim",
+  priority = 1000,
+  lazy = false,
+  ---@type snacks.Config
+  opts = {
+    bigfile = { enabled = true },
+    dashboard = { enabled = true },
+    explorer = { enabled = true },
+    indent = { enabled = true },
+    input = { enabled = true },
+    notifier = { enabled = true },
+    picker = {
+      enabled = true,
+      sources = {
+        explorer = {
+          jump = { close = true },
+          layout = { layout = { position = "right" } },
         },
-        picker = {
-            enabled = true,
-            sources = {
-                explorer = {
-                    jump = { close = true },
-                    layout = { layout = { position = "right" } }
-                }
-            }
-        },
-        notifier = { enabled = true },
-        quickfile = { enabled = false },
-        scope = { enabled = true },
-        scroll = { enabled = true },
-        statuscolumn = { enabled = true },
-        words = { enabled = true },
+      },
     },
-    keys = {
-        { "<A-p>",  function() Snacks.picker() end,                 desc = "Smart Find Files" },
-        { "<A-,>",  function() Snacks.picker.buffers() end,         desc = "Buffers" },
-        { "<A-g>",  function() Snacks.picker.grep() end,            desc = "Grep" },
-        { "<A-c>:", function() Snacks.picker.command_history() end, desc = "Command History" },
-        { "<A-n>",  function() Snacks.picker.notifications() end,   desc = "Notification History" },
-        { "<A-s>",  function() Snacks.explorer() end,               desc = "File Explorer" },
-    }
+    quickfile = { enabled = false },
+    scope = { enabled = true },
+    scroll = { enabled = true },
+    statuscolumn = { enabled = true },
+    statusline = { enabled = false }, -- custom statusline (config/statusline.lua)
+    words = { enabled = true },
+    git = { enabled = true },
+    gitbrowse = { enabled = true },
+    zen = { enabled = true },
+    terminal = { enabled = true },
+    bufdelete = { enabled = true },
+    rename = { enabled = true },
+  },
+  keys = {
+    { "<A-p>", function() Snacks.picker() end, desc = "Smart Find Files" },
+    { "<A-,>", function() Snacks.picker.buffers() end, desc = "Buffers" },
+    { "<A-g>", function() Snacks.picker.grep() end, desc = "Grep" },
+    { "<A-c>:", function() Snacks.picker.command_history() end, desc = "Command History" },
+    { "<A-n>", function() Snacks.picker.notifications() end, desc = "Notification History" },
+    { "<A-s>", function() Snacks.explorer() end, desc = "File Explorer" },
+    { "<leader>bd", function() Snacks.bufdelete() end, desc = "Delete Buffer" },
+    { "<leader>gg", function() Snacks.git.blame_line() end, desc = "Git Blame Line" },
+    { "<leader>gb", function() Snacks.gitbrowse() end, desc = "Git Browse" },
+    { "<leader>z", function() Snacks.zen() end, desc = "Zen Mode" },
+    { "<leader>Z", function() Snacks.zen.zoom() end, desc = "Zoom" },
+    { "<leader>tt", function() Snacks.terminal() end, desc = "Terminal" },
+    { "<leader>cR", function() Snacks.rename.rename_file() end, desc = "Rename File" },
+  },
 }

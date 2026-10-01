@@ -1,20 +1,19 @@
 return {
-  'ray-x/web-tools.nvim',
+  "ray-x/web-tools.nvim",
   config = function()
-    require('web-tools').setup({
-        keymaps = {
-          rename = nil,  -- by default use same setup of lspconfig
-          },
-          hurl = {  -- hurl default
-            show_headers = false, -- do not show http headers
-              floating = false,   -- use floating windows (need guihua.lua)
-              json5 = false,      -- use json5 parser require json5 treesitter
-              formatters = {  -- format the result by filetype
-                json = { 'jq' },
-                html = { 'prettier', '--parser', 'html' },
-              },
-            },
-          })
-
-      end,
-    }
+    require("web-tools").setup({
+      keymaps = {
+        rename = nil, -- use the lspconfig default
+      },
+      hurl = {
+        show_headers = false,
+        floating = false,
+        json5 = false,
+        formatters = {
+          json = { "jq" },
+          html = { "prettier", "--parser", "html" },
+        },
+      },
+    })
+  end,
+}
