@@ -48,6 +48,15 @@ git -C ~/.config/nvim log --oneline -10
 git -C ~/.config/nvim diff
 ```
 
+Fast event context reproduction:
+
+```lua
+-- If the call only fails here, it is the fast-context (`E5560`) bug.
+vim.uv.new_timer():start(0, 0, function()
+  require("<plugin>").some_fn()
+end)
+```
+
 In-session:
 
 - `:messages` — recent errors and `echo`/`notify` output.
@@ -73,6 +82,13 @@ In-session:
   then `:Lazy sync`.
 - **`lcd` side effects:** the `BufEnter` autocmd sets a window-local cwd; odd
   relative-path behavior can come from here (`lua/config/autocmds.lua`).
+- **Fast event context (`E5560` / "loop or previous error loading module")**: an
+  async callback (`vim.system`, `vim.uv` timer/socket) touched the editor or
+  lazily required a UI module (e.g. `snacks.win`, which calls
+  `nvim_create_augroup`). Fix: wrap the callback in `vim.schedule` /
+  `vim.schedule_wrap`. Reproduce by calling the function inside
+  `vim.uv.new_timer():start(0, 0, function() ... end)`; if it only fails there,
+  it is this bug.
 
 ## Output
 

@@ -50,6 +50,27 @@ native APIs (`vim.lsp.config`, `vim.lsp.enable`, `vim.snippet`, `vim.uv`), using
 - Lua style: 2-space indent, double quotes, no trailing whitespace, no comments
   unless they add real value. Match surrounding files.
 
+## Async and UI
+
+- Async callbacks must return to the main loop before touching the editor. Wrap
+  the callback of `vim.system` / `vim.uv` (timers, sockets, ...) in `vim.schedule`
+  or `vim.schedule_wrap`. Doing editor work (buffers/windows/augroups,
+  lazy-requiring a UI module) in a fast event context raises
+  `E5560: ... must not be called in a fast event context` — and, once a lazy
+  require has failed there, later attempts report the misleading
+  `loop or previous error loading module '<mod>'`.
+- Dock custom UIs on `snacks` (`Snacks.win`) and always call it inside `pcall`
+  with a `vim.notify` fallback, so a UI failure degrades to a message instead of
+  aborting the command. The UI foundation strategy is
+  `.plans/2026-10-01-1400-ui-fundacao-draft.md`.
+- When integrating an external API, validate the parser against a real response,
+  not only a headless load — payload shape drifts (e.g. a top-level `usage`
+  wrapper, or `resetsAt` as an ISO-8601 string rather than an epoch number).
+- UI/async code must be tested through its real path. Stubbing or overriding a
+  lazily-required module (e.g. setting `_G.Snacks.win`) hides require-path
+  failures; also exercise the callback from a fast event context (a `vim.uv`
+  timer callback) to catch `E5560`.
+
 ## Guardrails
 
 - **Never hand-edit `lazy-lock.json`.** Use `:Lazy` (sync/update) instead.
@@ -59,6 +80,8 @@ native APIs (`vim.lsp.config`, `vim.lsp.enable`, `vim.snippet`, `vim.uv`), using
 - Keep `init.lua` free of plugin configuration.
 - If a skill's instructions ever disagree with the code, **the code is the
   truth** — read the relevant files before acting and follow the code.
+- Never perform editor work in a fast event context; schedule the callback to
+  the main loop first (see "Async and UI").
 - Before declaring a task done, validate: `nvim --headless "+lua vim.cmd('qa')"`
   must exit cleanly, and check `:checkhealth` / `:Lazy` when relevant. Lua syntax
   can be checked with `luajit -bl`/`nvim --headless` as appropriate.

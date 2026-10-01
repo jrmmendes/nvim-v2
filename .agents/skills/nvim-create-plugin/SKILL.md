@@ -75,6 +75,27 @@ No `plugin/`, `doc/` or global namespace. UI work should follow the foundation
 strategy in `.plans/2026-10-01-1400-ui-fundacao-draft.md` (snacks + nui) rather
 than inventing its own subsystem.
 
+## Async and UI
+
+- Async callbacks run in a fast event context: schedule them onto the main loop
+  before doing editor work (lazily requiring/creating UI, buffers, augroups). Use
+  `vim.schedule_wrap` on the callback passed to `vim.system` / `vim.uv`.
+- Touching the vim API in that context raises `E5560`; a failed lazy require
+  there then surfaces as `loop or previous error loading module '...'`, which is
+  misleading — look for the underlying fast-context error.
+- Render floats with `Snacks.win` (see the UI foundation note in AGENTS.md) and
+  guard it: capture the function, call it in `pcall`, and fall back to
+  `vim.notify`.
+
+```lua
+function M.fetch(cb)
+  -- curl/vim.uv complete in a fast event context; hop to the main loop before
+  -- any editor work (e.g. lazily loading Snacks.win, which creates augroups).
+  cb = vim.schedule_wrap(cb)
+  ...
+end
+```
+
 ## Procedure
 
 1. Read `AGENTS.md`, `lua/config/custom.lua` and `lua/config/lazy.lua`.
@@ -82,7 +103,9 @@ than inventing its own subsystem.
    following the layout above.
 3. Implement the plugin under `core/custom/<name>/lua/<name>/`.
 4. Validate: `nvim --headless "+lua vim.cmd('qa')"` exits 0, and the plugin shows
-   up in `:Lazy`.
+   up in `:Lazy`. Exercise the real async path (do not only stub `Snacks.win`) and,
+   if the plugin renders UI, run its callback from a `vim.uv` timer callback to
+   confirm no `E5560`.
 5. Restart Neovim (or `:Lazy reload`) for the collector to pick up new files.
 
 External plugins still use `lua/plugins/<concern>.lua` — see the
