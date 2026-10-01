@@ -28,6 +28,7 @@ delegate and verify — not to hold the whole task in your own context.
 
 1. **Classify** the request against the routing map in `AGENTS.md`:
    - plugin/stack → `nvim-add-plugin`
+   - local/custom plugin → `nvim-create-plugin`
    - keybinds → `nvim-keymaps`
    - LSP/mason → `nvim-lsp`
    - options/autocmds → `nvim-options-autocmds`

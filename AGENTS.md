@@ -25,6 +25,10 @@ native APIs (`vim.lsp.config`, `vim.lsp.enable`, `vim.snippet`, `vim.uv`), using
   - `lazy.lua` — lazy.nvim bootstrap + `setup({ spec = { { import = "plugins" } } })`.
 - `lua/plugins/` — **one file per concern**, auto-imported by the `import = "plugins"`
   glob. Adding a file here is enough; never register plugins manually elsewhere.
+- `core/` — local ("custom") plugins. `core/custom/<name>/` is the pure plugin
+  tree; `core/plugins/<name>.lua` holds its lazy.nvim spec. Not auto-imported:
+  `lua/config/custom.lua` collects the specs and injects `dir`/`name`, and
+  `lua/config/lazy.lua` merges them with `import = "plugins"`.
 - `lazy-lock.json` — generated lockfile. `lazy-lock.json.bak` is a manual backup.
 - `lua/config/statusline.lua`, `lua/plugins/*.lua` — return a lazy.nvim spec
   (a table, or a function returning one).
@@ -64,6 +68,7 @@ native APIs (`vim.lsp.config`, `vim.lsp.enable`, `vim.snippet`, `vim.uv`), using
 | Task                                                | Skill                   |
 | --------------------------------------------------- | ----------------------- |
 | Add/change/configure a plugin or plugin stack       | `nvim-add-plugin`       |
+| Create/scaffold a local custom plugin (`core/`)     | `nvim-create-plugin`    |
 | Add/change keybinds (global or plugin/buffer-local) | `nvim-keymaps`          |
 | Configure LSP servers, mason, install servers       | `nvim-lsp`              |
 | Change options or autocmds                          | `nvim-options-autocmds` |

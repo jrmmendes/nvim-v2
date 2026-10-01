@@ -15,6 +15,9 @@ Neovim 0.12+ and its native APIs (`vim.lsp.config`, `vim.snippet`, `vim.uv`).
 
 - `lua/config/` — `options`, `keymaps`, `autocmds`, custom `statusline` and the lazy.nvim bootstrap.
 - `lua/plugins/` — one file per concern (auto-imported via `import = "plugins"`).
+- `core/` — local ("custom") plugins: pure trees in `core/custom/<name>/` with
+  their lazy.nvim specs in `core/plugins/<name>.lua` (collected by
+  `lua/config/custom.lua`).
 
 ## Highlights
 
@@ -40,7 +43,10 @@ This repo is set up for [OpenCode](https://opencode.ai) agents:
 - `.opencode/agents/build-nvim.md` — the `Build:Nvim` primary agent: classifies a
   request, picks a skill and delegates execution to a subagent.
 - `.agents/skills/nvim-*/SKILL.md` — on-demand procedures for adding plugins,
-  keymaps, LSP, options/autocmds, debugging and read-only config questions.
+  keymaps, LSP, options/autocmds, debugging, local custom plugins and read-only
+  config questions.
+- `.opencode/tools/new-custom-plugin.ts` — scaffolds a local plugin
+  (`core/plugins/<name>.lua` + `core/custom/<name>/`); requires Node 23+.
 
 ## Install
 

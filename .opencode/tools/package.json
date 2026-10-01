@@ -1,0 +1,8 @@
+{
+  "name": "nvim-config-tools",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=23"
+  }
+}
