@@ -1,7 +1,7 @@
 return {
   "iamcco/markdown-preview.nvim",
   ft = { "markdown" },
-  build = function() vim.fn["mkdp#util#install"]() end,
+  build = ":call mkdp#util#install_sync()",
   config = function()
     vim.api.nvim_create_user_command("PreviewMD", function()
       vim.cmd("MarkdownPreviewToggle")

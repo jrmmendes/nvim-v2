@@ -56,6 +56,26 @@ This repo is set up for [OpenCode](https://opencode.ai) agents:
 git clone git@github.com:jrmmendes/nvim-v2.git ~/.config/nvim
 ```
 
+## Markdown preview setup
+
+Markdown preview uses [`iamcco/markdown-preview.nvim`](https://github.com/iamcco/markdown-preview.nvim), which needs a prebuilt per-platform binary. Its `build` is declared as `:call mkdp#util#install_sync()`, so lazy.nvim loads the plugin (putting its `autoload/mkdp/*` functions on the runtimepath) and downloads the binary synchronously during `:Lazy sync` (or `:Lazy build markdown-preview.nvim`).
+
+A Lua `build = function() ... end` does not load the plugin first, so the `mkdp#util#*` autoload functions are unavailable (`E117`); and the plugin's default `mkdp#util#install` is asynchronous and never completes on a fresh or non-interactive install. The `:call` string form avoids both problems.
+
+Verify the binary is present with:
+
+```bash
+~/.local/share/nvim/lazy/markdown-preview.nvim/app/bin/markdown-preview-linux --version
+```
+
+If it is missing (for example after upgrading an existing install), download it manually. The command must pass a Markdown file so lazy.nvim loads the plugin and exposes its `autoload` functions:
+
+```bash
+nvim --headless README.md "+lua vim.fn['mkdp#util#install_sync']()" +qa
+```
+
+Then open a Markdown file and run `:PreviewMD` (toggle) to start/stop the rendered preview in your browser. No keymap is bound.
+
 ## Requirements
 
 - Neovim >= 0.12
