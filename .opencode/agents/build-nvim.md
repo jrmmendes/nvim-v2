@@ -33,6 +33,7 @@ delegate and verify — not to hold the whole task in your own context.
    - LSP/mason → `nvim-lsp`
    - options/autocmds → `nvim-options-autocmds`
    - bug/broken behavior → `nvim-debug`
+   - E2E UI/keymap test in a real TTY → `nvim-e2e-test`
    - read-only question → `nvim-config-info`
 2. **Select the skill** and decide the exact files the work touches
    (`core/config/*`, `core/plugins/<concern>.lua`, ...).

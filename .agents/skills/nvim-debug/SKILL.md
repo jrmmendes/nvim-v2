@@ -18,7 +18,9 @@ fix or revert. Read `AGENTS.md` and the relevant `lua/` file first.
    ```bash
    nvim --headless "+lua vim.cmd('qa')" 2>&1
    ```
-   Non-zero exit or a stack trace points at the culprit file.
+   Non-zero exit or a stack trace points at the culprit file. Headless cannot
+   exercise UI/floats or real keystrokes — if the bug only appears there, switch
+   to the `nvim-e2e-test` skill (drive `nvim` inside tmux and send keys).
 3. **Health checks.**
    - `:checkhealth` — overall.
    - `:checkhealth vim.lsp` — LSP-specific.

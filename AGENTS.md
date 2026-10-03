@@ -103,6 +103,7 @@ native APIs (`vim.lsp.config`, `vim.lsp.enable`, `vim.snippet`, `vim.uv`), using
 | Configure LSP servers, mason, install servers       | `nvim-lsp`              |
 | Change options or autocmds                          | `nvim-options-autocmds` |
 | Debug/reproduce a config error or broken behavior   | `nvim-debug`            |
+| E2E-test UI/keymap behavior in a real TTY (tmux)    | `nvim-e2e-test`         |
 | Answer questions about the current config (read-only)| `nvim-config-info`      |
 
 ## Delegation protocol

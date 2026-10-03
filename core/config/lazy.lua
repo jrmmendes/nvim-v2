@@ -21,3 +21,29 @@ require("lazy").setup({
   install = { colorscheme = { "gruvbox" } },
   checker = { enabled = false },
 })
+
+-- Workaround for an upstream lazy.nvim race.
+--
+-- The view's `update()` is wrapped in `Util.throttle`, which renders through
+-- `lazy.async` (a coroutine resumed on a later event-loop tick). So `:Lazy`
+-- returns before `render:update()` has set `render.locations`. A key already in
+-- the typeahead (e.g. `<Leader>l` followed by <CR>) is then handled by the
+-- details keymap while `locations` is still nil, and `get_plugin`/`get_row`
+-- crash with "bad argument #1 to 'ipairs' (table expected, got nil)".
+-- Guard the lookups until the first render populates `locations`.
+do
+  local Render = require("lazy.view.render")
+  local get_plugin, get_row = Render.get_plugin, Render.get_row
+  Render.get_plugin = function(self, row)
+    if self.locations == nil then
+      return
+    end
+    return get_plugin(self, row)
+  end
+  Render.get_row = function(self, selected)
+    if self.locations == nil then
+      return
+    end
+    return get_row(self, selected)
+  end
+end
