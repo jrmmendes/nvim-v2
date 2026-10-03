@@ -13,16 +13,17 @@ Neovim 0.12+ and its native APIs (`vim.lsp.config`, `vim.snippet`, `vim.uv`).
 
 ## Structure
 
-- `lua/config/` — `options`, `keymaps`, `autocmds`, custom `statusline` and the lazy.nvim bootstrap.
-- `lua/plugins/` — one file per concern (auto-imported via `import = "plugins"`).
-- `core/` — local ("custom") plugins: pure trees in `core/custom/<name>/` with
-  their lazy.nvim specs in `core/plugins/<name>.lua` (collected by
-  `lua/config/custom.lua`).
+- `core/config/` — `options`, `keymaps`, `autocmds`, custom `statusline` and the lazy.nvim bootstrap.
+- `core/plugins/` — plugin specs, one file per concern, external and local side
+  by side (`core/plugins/<name>.lua`), loaded by `core/config/custom.lua`.
+- `core/custom/` — local ("custom") plugin trees: pure trees in
+  `core/custom/<name>/` (`lua/<name>/init.lua`); the collector injects `dir`/`name`
+  into the matching spec.
 
 ## Highlights
 
 - **Completion**: [blink.cmp](https://github.com/Saghen/blink.cmp) with native `vim.snippet`.
-- **Statusline**: custom powerline-style bar (`lua/config/statusline.lua`) — mode-colored
+- **Statusline**: custom powerline-style bar (`core/config/statusline.lua`) — mode-colored
   segments, file icons (mini.icons), diagnostics, git branch/diffs, LSP, search count and clock.
 - **UI hub**: [snacks.nvim](https://github.com/folke/snacks.nvim) (picker,
   explorer, dashboard, notifier, zen, terminal, git, and more).
@@ -84,4 +85,13 @@ Then open a Markdown file and run `:PreviewMD` (toggle) to start/stop the render
 - [ripgrep](https://github.com/BurntSushi/ripgrep)
 - [fd](https://github.com/sharkdp/fd)
 - [cargo](https://www.rust-lang.org/tools/install) (blink.cmp fuzzy matcher, treesitter parsers)
+- `tree-sitter-cli` >= 0.26.1 and a C compiler (nvim-treesitter on the `main` branch builds parsers)
 - A [Nerd Font](https://www.nerdfonts.com/font-downloads)
+
+Install the Tree-sitter CLI with cargo (needed when your distribution ships an older version, e.g. `tree-sitter-cli` 0.25.10 on Fedora 43):
+
+```bash
+cargo install --locked tree-sitter-cli
+```
+
+Make sure `~/.cargo/bin` is on your `PATH` — this matters when Neovim is launched from a desktop launcher — and verify the install with `tree-sitter --version`.

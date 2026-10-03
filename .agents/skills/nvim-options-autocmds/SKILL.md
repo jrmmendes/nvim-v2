@@ -1,6 +1,6 @@
 ---
 name: nvim-options-autocmds
-description: Conventions for changing editor options and autocmds in this Neovim config — lua/config/options.lua and lua/config/autocmds.lua patterns, augroups, indent/filetype autocmds. Use when the user wants to change an editor option, add or fix an autocmd, or adjust indentation/filetype behavior.
+description: Conventions for changing editor options and autocmds in this Neovim config — core/config/options.lua and core/config/autocmds.lua patterns, augroups, indent/filetype autocmds. Use when the user wants to change an editor option, add or fix an autocmd, or adjust indentation/filetype behavior.
 compatibility: opencode
 ---
 
@@ -8,13 +8,13 @@ compatibility: opencode
 
 Two files, two responsibilities:
 
-- `lua/config/options.lua` — all `vim.opt` / `vim.o` / `vim.g` settings.
-- `lua/config/autocmds.lua` — all global autocmds (deduplicated).
+- `core/config/options.lua` — all `vim.opt` / `vim.o` / `vim.g` settings.
+- `core/config/autocmds.lua` — all global autocmds (deduplicated).
 
 Both are required by `init.lua` in order. Never scatter options/autocmds into
 plugin files or `init.lua`.
 
-## Options (`lua/config/options.lua`)
+## Options (`core/config/options.lua`)
 
 The file aliases `local opt = vim.opt` and groups options by concern with
 comments. Match that structure.
@@ -41,7 +41,7 @@ Rules:
   the existing style in the file.
 - Prefer native options over plugins when Neovim 0.12 already supports it.
 
-## Autocmds (`lua/config/autocmds.lua`)
+## Autocmds (`core/config/autocmds.lua`)
 
 Current autocmds and their patterns:
 
@@ -73,7 +73,7 @@ Rules:
   `buftype`/path guards or you will break special buffers (terminals, pickers).
 - The indentation autocmd intentionally overrides per-filetype indentation
   (2-space everywhere). Do not "fix" it without confirming with the user.
-- Treesitter filetypes are duplicated in `lua/plugins/nvim-treesitter.lua`
+- Treesitter filetypes are duplicated in `core/plugins/nvim-treesitter.lua`
   (`require("nvim-treesitter").install({...})`). If you add a filetype to one
   list, update the other, or highlighting/indent silently won't start.
 

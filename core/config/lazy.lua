@@ -1,4 +1,4 @@
--- lazy.nvim bootstrap. Leader keys and options live in config/options.lua.
+-- lazy.nvim bootstrap. Leader keys and options live in core/config/options.lua.
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
@@ -17,7 +17,7 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
-  spec = vim.list_extend({ { import = "plugins" } }, require("config.custom").collect()),
+  spec = require("core.config.custom").collect(),
   install = { colorscheme = { "gruvbox" } },
   checker = { enabled = false },
 })

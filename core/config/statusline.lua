@@ -161,7 +161,7 @@ end
 
 function M.setup()
   hl_setup()
-  vim.go.statusline = "%{%v:lua.require'config.statusline'.render()%}"
+  vim.go.statusline = "%{%v:lua.require'core.config.statusline'.render()%}"
   vim.api.nvim_create_autocmd("ColorScheme", { callback = hl_setup })
   vim.defer_fn(function()
     local timer = assert(vim.uv.new_timer())

@@ -35,15 +35,15 @@ delegate and verify — not to hold the whole task in your own context.
    - bug/broken behavior → `nvim-debug`
    - read-only question → `nvim-config-info`
 2. **Select the skill** and decide the exact files the work touches
-   (`lua/config/*`, `lua/plugins/<concern>.lua`, ...).
+   (`core/config/*`, `core/plugins/<concern>.lua`, ...).
 3. **Delegate** with the `task` tool to a **generic subagent**, passing:
    - the skill name to load (`skill({ name: "..." })`),
    - the exact files to read first,
    - a precise brief of the requested change and the repo conventions,
    - the validation command(s) it must run.
    Example brief: *"Load skill `nvim-add-plugin`. Read AGENTS.md and
-   `lua/plugins/snacks.lua`. Add plugin X as a new concern file
-   `lua/plugins/<concern>.lua` following the lazy.nvim spec. Then run
+   `core/plugins/snacks.lua`. Add plugin X as a new concern file
+   `core/plugins/<concern>.lua` following the lazy.nvim spec. Then run
    `nvim --headless \"+lua vim.cmd('qa')\"` and report the diff."*
 4. **Validate** the subagent's result yourself: inspect the diff and run
    `nvim --headless "+lua vim.cmd('qa')"` (must exit 0). Check `:Lazy` /

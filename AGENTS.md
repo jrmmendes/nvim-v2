@@ -12,30 +12,37 @@ native APIs (`vim.lsp.config`, `vim.lsp.enable`, `vim.snippet`, `vim.uv`), using
 
 ## Architecture
 
-- `init.lua` — orchestrator. Requires, in order: `config.options`,
-  `config.keymaps`, `config.autocmds`, `config.statusline` (`.setup()`), then
-  `config.lazy`. Do not add plugin code here.
-- `lua/config/` — cross-cutting config:
+- `init.lua` — orchestrator. Requires, in order: `core.config.options`,
+  `core.config.keymaps`, `core.config.autocmds`, `core.config.statusline` (`.setup()`), then
+  `core.config.lazy`. Do not add plugin code here.
+- `core/config/` — cross-cutting config:
   - `options.lua` — single source of truth for `vim.opt` / `vim.g`. Leader keys
     (`mapleader = " "`, `maplocalleader = "\\"`) are defined here, before lazy.
   - `keymaps.lua` — global keymaps only.
   - `autocmds.lua` — global autocmds.
   - `statusline.lua` — custom powerline-style statusline (used because
     `laststatus = 3` and snacks' statusline is disabled).
-  - `lazy.lua` — lazy.nvim bootstrap + `setup({ spec = { { import = "plugins" } } })`.
-- `lua/plugins/` — **one file per concern**, auto-imported by the `import = "plugins"`
-  glob. Adding a file here is enough; never register plugins manually elsewhere.
-- `core/` — local ("custom") plugins. `core/custom/<name>/` is the pure plugin
-  tree; `core/plugins/<name>.lua` holds its lazy.nvim spec. Not auto-imported:
-  `lua/config/custom.lua` collects the specs and injects `dir`/`name`, and
-  `lua/config/lazy.lua` merges them with `import = "plugins"`.
+  - `lazy.lua` — lazy.nvim bootstrap + `setup({ spec = require("core.config.custom").collect() })`.
+  - `custom.lua` — collector: loads every `core/plugins/*.lua` spec, one file per
+    concern, and returns the list for `lazy.setup`. Replaces lazy's
+    `import = "plugins"` so specs can live flat in `core/plugins/` (no
+    `lua/plugins/` tree).
+- `core/plugins/` — plugin spec files, **one file per concern**, external and
+  local plugins side by side as `core/plugins/<name>.lua`. Loaded by
+  `core/config/custom.lua` (not auto-imported — this is not a `lua/` module
+  tree). Adding a file here is enough; never register plugins manually elsewhere.
+- `core/` — local ("custom") plugins plus cross-cutting config. `core/config/`
+  holds `options`, `keymaps`, `autocmds`, `statusline`, `custom` and the lazy
+  bootstrap. `core/custom/<name>/` is the pure plugin tree; when it exists for a
+  spec name, the collector injects `dir = core/custom/<name>` and `name` into
+  that spec.
 - `lazy-lock.json` — generated lockfile. `lazy-lock.json.bak` is a manual backup.
-- `lua/config/statusline.lua`, `lua/plugins/*.lua` — return a lazy.nvim spec
+- `core/config/statusline.lua`, `core/plugins/*.lua` — return a lazy.nvim spec
   (a table, or a function returning one).
 
 ## Conventions
 
-- One concern per file in `lua/plugins/`; name it after the concern (e.g.
+- One concern per file in `core/plugins/`; name it after the concern (e.g.
   `lsp.lua`, `conform.lua`, `snacks.lua`).
 - Plugin specs follow lazy.nvim: `dependencies`, `opts` (preferred over a
   `config` function when possible), `keys`, `cmd`, `event`, `ft`, `priority`,
@@ -43,9 +50,9 @@ native APIs (`vim.lsp.config`, `vim.lsp.enable`, `vim.snippet`, `vim.uv`), using
   setup logic is required.
 - Prefer **native Neovim 0.12 APIs** over legacy plugins/APIs:
   `vim.lsp.config` / `vim.lsp.enable`, `vim.snippet`, `vim.uv`.
-- Options go in `lua/config/options.lua`; keymaps in `lua/config/keymaps.lua`
+- Options go in `core/config/options.lua`; keymaps in `core/config/keymaps.lua`
   (global) or a plugin's `keys` (plugin-specific, lazy-loadable).
-- Buffer-local keymaps belong on `LspAttach` (see `lua/plugins/lsp.lua`), not in
+- Buffer-local keymaps belong on `LspAttach` (see `core/plugins/lsp.lua`), not in
   the global keymaps file.
 - Lua style: 2-space indent, double quotes, no trailing whitespace, no comments
   unless they add real value. Match surrounding files.

@@ -8,15 +8,15 @@ compatibility: opencode
 
 Three places a keymap can live. Pick the narrowest one that fits.
 
-1. **Global keymaps** → `lua/config/keymaps.lua` (always loaded).
-2. **Plugin keymaps** → the plugin's `keys` table in `lua/plugins/<concern>.lua`
+1. **Global keymaps** → `core/config/keymaps.lua` (always loaded).
+2. **Plugin keymaps** → the plugin's `keys` table in `core/plugins/<concern>.lua`
    (enables lazy-loading on keypress).
 3. **Buffer-local keymaps** → an autocmd, normally `LspAttach` in
-   `lua/plugins/lsp.lua` (only valid for that buffer).
+   `core/plugins/lsp.lua` (only valid for that buffer).
 
 ## Leader keys
 
-Defined in `lua/config/options.lua`, **before** lazys load:
+Defined in `core/config/options.lua`, **before** lazys load:
 
 ```lua
 vim.g.mapleader = " "       -- <Space>
@@ -25,7 +25,7 @@ vim.g.maplocalleader = "\\" -- <Backslash>
 
 Never redefine them elsewhere. They must load before `config.lazy`.
 
-## Global keymaps (`lua/config/keymaps.lua`)
+## Global keymaps (`core/config/keymaps.lua`)
 
 Convention: `local map = vim.keymap.set`, then one line per map with `desc`.
 
@@ -55,18 +55,18 @@ return {
 }
 ```
 
-See `lua/plugins/snacks.lua` for a full example.
+See `core/plugins/snacks.lua` for a full example.
 
 ## Buffer-local keymaps (`LspAttach`)
 
-LSP maps are set per buffer in `lua/plugins/lsp.lua` inside an `LspAttach`
+LSP maps are set per buffer in `core/plugins/lsp.lua` inside an `LspAttach`
 autocmd, using the `UserLspConfig` augroup. Add new LSP maps there:
 
 ```lua
 vim.keymap.set("n", "gd", vim.lsp.buf.definition, { buffer = ev.buf, desc = "Goto Definition" })
 ```
 
-Do **not** put buffer-local maps in `lua/config/keymaps.lua`.
+Do **not** put buffer-local maps in `core/config/keymaps.lua`.
 
 ## Rules
 

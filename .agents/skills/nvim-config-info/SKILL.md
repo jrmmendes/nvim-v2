@@ -15,27 +15,27 @@ for a change, route to the appropriate skill (`nvim-add-plugin`, `nvim-keymaps`,
 | Question                                  | Read                                            |
 | ----------------------------------------- | ----------------------------------------------- |
 | Overall structure / entry point           | `AGENTS.md`, `README.md`, `init.lua`            |
-| Editor options, leader keys               | `lua/config/options.lua`                        |
-| Global keymaps                            | `lua/config/keymaps.lua`                        |
-| Autocmds                                  | `lua/config/autocmds.lua`                       |
-| Statusline                                | `lua/config/statusline.lua`                     |
-| lazy.nvim bootstrap / loading             | `lua/config/lazy.lua`                           |
-| Plugins (one per concern)                 | `lua/plugins/*.lua`                             |
-| LSP / mason                               | `lua/plugins/lsp.lua`                           |
-| Completion / capabilities                 | `lua/plugins/completion.lua`                    |
-| Formatting                                | `lua/plugins/conform.lua`                       |
-| Treesitter                                | `lua/plugins/nvim-treesitter.lua`               |
-| UI (picker, explorer, dashboard, terminal)| `lua/plugins/snacks.lua`                        |
-| Colorscheme                               | `lua/plugins/colorscheme.lua`                   |
-| Plugin keymaps (lazy)                     | each `lua/plugins/*.lua` `keys` table           |
+| Editor options, leader keys               | `core/config/options.lua`                        |
+| Global keymaps                            | `core/config/keymaps.lua`                        |
+| Autocmds                                  | `core/config/autocmds.lua`                       |
+| Statusline                                | `core/config/statusline.lua`                     |
+| lazy.nvim bootstrap / loading             | `core/config/lazy.lua`                           |
+| Plugins (one per concern)                 | `core/plugins/*.lua`                             |
+| LSP / mason                               | `core/plugins/lsp.lua`                           |
+| Completion / capabilities                 | `core/plugins/completion.lua`                    |
+| Formatting                                | `core/plugins/conform.lua`                       |
+| Treesitter                                | `core/plugins/nvim-treesitter.lua`               |
+| UI (picker, explorer, dashboard, terminal)| `core/plugins/snacks.lua`                        |
+| Colorscheme                               | `core/plugins/colorscheme.lua`                   |
+| Plugin keymaps (lazy)                     | each `core/plugins/*.lua` `keys` table           |
 | Installed plugin versions                 | `lazy-lock.json` (read only — never edit)       |
 
 ## How to answer well
 
 - **Read the actual files** before asserting; do not guess from memory.
-- For keymaps: combine `lua/config/keymaps.lua` (global) with the `keys` tables
-  found across `lua/plugins/*.lua` (plugin/lazy). LSP buffer-local maps live in
-  the `LspAttach` autocmd in `lua/plugins/lsp.lua`. Always report the leader
+- For keymaps: combine `core/config/keymaps.lua` (global) with the `keys` tables
+  found across `core/plugins/*.lua` (plugin/lazy). LSP buffer-local maps live in
+  the `LspAttach` autocmd in `core/plugins/lsp.lua`. Always report the leader
   context (`<leader>` = Space, `<localleader>` = `\`).
 - For plugins: list the repo, lazy-load trigger (`event`/`ft`/`cmd`), and what it
   does. Note `lazy = false` ones (colorscheme, snacks, treesitter, lspconfig).
@@ -47,9 +47,9 @@ for a change, route to the appropriate skill (`nvim-add-plugin`, `nvim-keymaps`,
 
 ```bash
 # List plugins files
-ls lua/plugins
+ls core/plugins
 # Find a keymap / option / plugin across the config
-rg -n "pattern" lua
+rg -n "pattern" core
 ```
 
 Do not run commands that modify state; `rg`/`ls`/`cat` are fine.

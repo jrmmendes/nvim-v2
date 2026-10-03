@@ -18,18 +18,18 @@ plugins and can later be extracted into standalone repositories.
   external plugin spec, except it carries **no path**: the collector injects
   `dir` and `name`.
 
-Specs under `core/plugins/` are **not** auto-imported by `import = "plugins"`
-(they live outside `lua/`), so a dedicated collector handles them.
+External and local specs live side by side in `core/plugins/`; the collector
+distinguishes them by the presence of a matching `core/custom/<name>/` tree.
 
 ## Collector
 
-`lua/config/custom.lua` globs `<config>/core/plugins/*.lua`, `dofile`s each one,
-injects `dir = <config>/core/custom/<basename>` and `name = <basename>` when
-absent, and returns the list of specs. `lua/config/lazy.lua` merges them next to
-`{ import = "plugins" }`:
+`core/config/custom.lua` globs `<config>/core/plugins/*.lua`, `dofile`s each one,
+injects `dir = <config>/core/custom/<name>` and `name = <name>` when a matching
+`core/custom/<name>/` tree exists, and returns the list of specs.
+`core/config/lazy.lua` passes that list straight to `lazy.setup`:
 
 ```lua
-spec = vim.list_extend({ { import = "plugins" } }, require("config.custom").collect()),
+spec = require("core.config.custom").collect(),
 ```
 
 ## Scaffolding
@@ -98,7 +98,7 @@ end
 
 ## Procedure
 
-1. Read `AGENTS.md`, `lua/config/custom.lua` and `lua/config/lazy.lua`.
+1. Read `AGENTS.md`, `core/config/custom.lua` and `core/config/lazy.lua`.
 2. Scaffold with the `new-custom-plugin` tool, or create the two files by hand
    following the layout above.
 3. Implement the plugin under `core/custom/<name>/lua/<name>/`.
@@ -108,5 +108,5 @@ end
    confirm no `E5560`.
 5. Restart Neovim (or `:Lazy reload`) for the collector to pick up new files.
 
-External plugins still use `lua/plugins/<concern>.lua` — see the
-`nvim-add-plugin` skill.
+External plugins use the same `core/plugins/<concern>.lua` location (no separate
+tree) — see the `nvim-add-plugin` skill.

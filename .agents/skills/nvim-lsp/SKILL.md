@@ -6,12 +6,12 @@ compatibility: opencode
 
 # LSP / language servers
 
-All LSP wiring lives in `lua/plugins/lsp.lua`. This config uses **native
+All LSP wiring lives in `core/plugins/lsp.lua`. This config uses **native
 Neovim 0.12 APIs** (`vim.lsp.config` / `vim.lsp.enable`), with
 `nvim-lspconfig` only as a provider of server definitions, plus `mason.nvim`
 and `mason-lspconfig.nvim` for installation.
 
-Read `lua/plugins/lsp.lua` before editing — it is the single source of truth.
+Read `core/plugins/lsp.lua` before editing — it is the single source of truth.
 
 ## How it is set up today
 
@@ -41,7 +41,7 @@ vim.lsp.config("*", {
 
 ## Install a server (Mason)
 
-1. Add the server name to `ensure_installed` in `lua/plugins/lsp.lua`:
+1. Add the server name to `ensure_installed` in `core/plugins/lsp.lua`:
 
    ```lua
    opts = {
@@ -51,7 +51,7 @@ vim.lsp.config("*", {
    ```
 
 2. Restart Neovim and run `:Mason` (or `:Lazy sync` then `:Mason`) to install.
-   `<Leader>m` opens Mason (mapped in `lua/config/keymaps.lua`).
+   `<Leader>m` opens Mason (mapped in `core/config/keymaps.lua`).
 3. Verify with `:LazyHealth` / `:checkhealth vim.lsp`, or `:LspInfo`.
 
 If a server binary is already on `$PATH`, Mason is not strictly required; the

@@ -39,9 +39,9 @@ fix or revert. Read `AGENTS.md` and the relevant `lua/` file first.
 nvim --headless "+lua vim.cmd('qa')" 2>&1
 
 # Lua syntax check of a single file
-luajit -bl lua/plugins/<file>.lua >/dev/null && echo OK
+luajit -bl core/plugins/<file>.lua >/dev/null && echo OK
 # (or)
-nvim --headless -c "luafile lua/plugins/<file>.lua" -c qa
+nvim --headless -c "luafile core/plugins/<file>.lua" -c qa
 
 # Git history of the config
 git -C ~/.config/nvim log --oneline -10
@@ -69,9 +69,9 @@ In-session:
 ## Common failure modes in this repo
 
 - **Treesitter:** highlighting/indent only start for filetypes listed in both
-  `lua/plugins/nvim-treesitter.lua` (install list) and
-  `lua/config/autocmds.lua` (FileType list). A missing parser = no highlight.
-- **Keymap unused/overridden:** the same key defined in `lua/config/keymaps.lua`
+  `core/plugins/nvim-treesitter.lua` (install list) and
+  `core/config/autocmds.lua` (FileType list). A missing parser = no highlight.
+- **Keymap unused/overridden:** the same key defined in `core/config/keymaps.lua`
   and a plugin `keys` table; later definition wins. `:verbose map`.
 - **LSP not attaching:** see `nvim-lsp`. Often a missing binary or a filetype
   that the server doesn't claim.
@@ -81,7 +81,7 @@ In-session:
 - **`lazy-lock.json` conflicts:** never hand-edit; `git checkout lazy-lock.json`
   then `:Lazy sync`.
 - **`lcd` side effects:** the `BufEnter` autocmd sets a window-local cwd; odd
-  relative-path behavior can come from here (`lua/config/autocmds.lua`).
+  relative-path behavior can come from here (`core/config/autocmds.lua`).
 - **Fast event context (`E5560` / "loop or previous error loading module")**: an
   async callback (`vim.system`, `vim.uv` timer/socket) touched the editor or
   lazily required a UI module (e.g. `snacks.win`, which calls
