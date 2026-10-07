@@ -15,6 +15,12 @@ native APIs (`vim.lsp.config`, `vim.lsp.enable`, `vim.snippet`, `vim.uv`), using
 - `init.lua` — orchestrator. Requires, in order: `core.config.options`,
   `core.config.keymaps`, `core.config.autocmds`, `core.config.statusline` (`.setup()`), then
   `core.config.lazy`. Do not add plugin code here.
+- **Module resolution:** Neovim only searches `lua/` directories on the
+  runtimepath, and this repo deliberately has no `lua/` layer — modules live
+  under `core/`. `init.lua` therefore prepends `stdpath("config")` to
+  `package.path`, which makes every `require("core.*")` resolve to
+  `<config>/core/<...>.lua`. Never add a `lua/` directory and never move
+  `core/` inside one; either breaks `require`.
 - `core/config/` — cross-cutting config:
   - `options.lua` — single source of truth for `vim.opt` / `vim.g`. Leader keys
     (`mapleader = " "`, `maplocalleader = "\\"`) are defined here, before lazy.
