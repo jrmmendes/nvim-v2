@@ -67,6 +67,11 @@ with [Shiki](https://shiki.style/), and renders
 [Mermaid](https://mermaid.js.org/) `12.2.0` diagrams **client-side** from a
 bundle embedded in the binary — no CDN, no network at runtime, no treesitter.
 
+YAML frontmatter (a `---` block at the very top) is parsed and hidden from the
+body: `title` becomes the page `<title>`, and `author`/`date`/`description`/
+`tags` render as a compact metadata block above the content. Malformed or
+unterminated frontmatter is left untouched as regular content.
+
 Open a Markdown file and run `:MD` to build/start the daemon, register the
 current file and open it in your browser. Every markdown file is served at a
 **slug URL** derived from its sanitized path relative to its git root (or your

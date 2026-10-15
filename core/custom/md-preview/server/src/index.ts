@@ -13,6 +13,7 @@ import { dirname, basename, extname, resolve, sep } from "node:path";
 import type { Server } from "bun";
 
 import { mermaidAsset } from "./assets";
+import { parseFrontmatter } from "./frontmatter";
 import { renderPage } from "./page";
 import { normalizeContent, renderMarkdown, warmup } from "./render";
 import { resolveThemeName, themeNames } from "./themes";
@@ -230,9 +231,12 @@ async function serveSlug(route: string, req: Request, url: URL): Promise<Respons
     cookieValue(req.headers.get("cookie"), "mdprv_theme"),
     defaultTheme
   );
-  const title = entry.path ? basename(entry.path) : "Markdown Preview";
-  const body = await renderMarkdown(normalizeContent(content), themeName, slug);
-  return new Response(renderPage({ title, body, themeName }), {
+  const { data, body: markdownBody } = parseFrontmatter(content);
+  const metaTitle =
+    typeof data.title === "string" || typeof data.title === "number" ? String(data.title).trim() : "";
+  const title = metaTitle || (entry.path ? basename(entry.path) : "Markdown Preview");
+  const body = await renderMarkdown(normalizeContent(markdownBody), themeName, slug);
+  return new Response(renderPage({ title, body, themeName, meta: data }), {
     headers: baseHeaders("text/html; charset=utf-8"),
   });
 }

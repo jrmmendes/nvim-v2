@@ -4,7 +4,10 @@ export interface PageInput {
   title: string;
   body: string;
   themeName: string;
+  meta?: Record<string, unknown>;
 }
+
+const META_FIELDS = ["author", "date", "description", "tags"];
 
 function escapeHtml(text: string): string {
   return text
@@ -12,6 +15,38 @@ function escapeHtml(text: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function metaValueHtml(value: unknown): string {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => `<span class="mdprv-tag">${escapeHtml(String(item))}</span>`)
+      .join(" ");
+  }
+  return escapeHtml(String(value));
+}
+
+function renderMeta(meta: Record<string, unknown> | undefined): string {
+  if (!meta) {
+    return "";
+  }
+  const items: string[] = [];
+  for (const key of META_FIELDS) {
+    const value = meta[key];
+    if (value === undefined || value === null || value === "") {
+      continue;
+    }
+    if (Array.isArray(value) && value.length === 0) {
+      continue;
+    }
+    items.push(
+      `<span class="mdprv-meta-item"><span class="mdprv-meta-key">${escapeHtml(key)}</span>${metaValueHtml(value)}</span>`
+    );
+  }
+  if (items.length === 0) {
+    return "";
+  }
+  return `<div class="mdprv-meta">${items.join("")}</div>`;
 }
 
 function rootVars(v: PageVars): string {
@@ -66,7 +101,11 @@ del{color:var(--mdprv-muted)}
 sup{font-size:.75em}
 pre.mermaid{background:transparent;border:0;text-align:center;overflow:visible}
 pre.mermaid svg{max-width:100%;height:auto}
-.mdprv-theme-toggle{position:fixed;top:.75rem;right:.75rem;z-index:10;font:inherit;font-size:13px;padding:.25rem .5rem;color:var(--mdprv-fg);background:var(--mdprv-code-bg);border:1px solid var(--mdprv-border);border-radius:6px;cursor:pointer}`;
+.mdprv-theme-toggle{position:fixed;top:.75rem;right:.75rem;z-index:10;font:inherit;font-size:13px;padding:.25rem .5rem;color:var(--mdprv-fg);background:var(--mdprv-code-bg);border:1px solid var(--mdprv-border);border-radius:6px;cursor:pointer}
+.mdprv-meta{display:flex;flex-wrap:wrap;gap:.35rem 1.25rem;margin:0 0 1.5rem;padding:.6rem .8rem;border:1px solid var(--mdprv-border);border-radius:6px;background:var(--mdprv-code-bg);font-size:.85em;color:var(--mdprv-muted)}
+.mdprv-meta-item{display:inline-flex;align-items:center;gap:.35rem}
+.mdprv-meta-key{font-weight:600;color:var(--mdprv-fg);text-transform:uppercase;font-size:.85em;letter-spacing:.03em}
+.mdprv-tag{display:inline-block;padding:.05rem .5rem;border:1px solid var(--mdprv-border);border-radius:999px;background:var(--mdprv-bg)}`;
 
 const SHIKI_DUAL_CSS = `@media (prefers-color-scheme: dark){.shiki,.shiki span{color:var(--shiki-dark)!important;background-color:var(--shiki-dark-bg)!important}}`;
 
@@ -151,6 +190,7 @@ export function renderPage(input: PageInput): string {
     "</head>",
     "<body>",
     `<select id="mdprv-theme" class="mdprv-theme-toggle" aria-label="Theme">${options}</select>`,
+    renderMeta(input.meta),
     '<article class="markdown-body">',
     input.body,
     "</article>",
