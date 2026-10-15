@@ -9,3 +9,7 @@ core/config/tags
 # Local notes / plans
 .plans/
 .playwright-mcp/
+
+# md-preview Bun server artifacts
+core/custom/md-preview/server/node_modules/
+core/custom/md-preview/server/bin/

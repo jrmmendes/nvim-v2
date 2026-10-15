@@ -139,27 +139,27 @@ function M.spawn(opts)
   opts = opts or {}
   local source = debug.getinfo(1, "S").source:sub(2)
   local plugin_dir = vim.fn.fnamemodify(source, ":p:h:h:h")
-  local config_dir = vim.fn.stdpath("config")
-  local data_site = vim.fn.stdpath("data") .. "/site"
-  local cmd = {
-    vim.v.progpath,
-    "--headless",
-    "-u",
-    "NONE",
-    "--cmd",
-    "set rtp+=" .. config_dir,
-    "--cmd",
-    "set rtp+=" .. plugin_dir,
-    "--cmd",
-    "set rtp+=" .. data_site,
-    "--cmd",
-    "lua require('md-preview.daemon').run()",
-  }
-  return vim.fn.jobstart(cmd, {
+  local server_dir = plugin_dir .. "/server"
+  local bin = server_dir .. "/bin/md-preview-server"
+
+  if vim.fn.executable(bin) == 0 and opts.auto_build ~= false then
+    vim.notify("md-preview: building server…", vim.log.levels.INFO)
+    vim.system({ "bash", server_dir .. "/build.sh" }, { cwd = server_dir }):wait(180000)
+  end
+
+  if vim.fn.executable(bin) == 0 then
+    vim.notify("md-preview: server binary missing; run " .. server_dir .. "/build.sh", vim.log.levels.ERROR)
+    return nil
+  end
+
+  return vim.fn.jobstart({ bin }, {
     detach = true,
+    stdio = { "null", "null", "null" },
     env = {
       MDPRV_PORT = tostring(opts.port or DEFAULT_PORT),
       MDPRV_IDLE = tostring(opts.idle_minutes or DEFAULT_IDLE),
+      MDPRV_STATE = state_path(),
+      MDPRV_THEME = tostring(opts.theme or "auto"),
     },
   })
 end
@@ -174,7 +174,10 @@ function M.ensure(opts)
     end
   end
 
-  M.spawn(opts)
+  local started = M.spawn(opts)
+  if not started or started <= 0 then
+    return nil
+  end
 
   local deadline = vim.uv.now() + 5000
   while vim.uv.now() < deadline do

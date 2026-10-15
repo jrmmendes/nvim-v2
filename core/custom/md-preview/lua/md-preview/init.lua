@@ -7,14 +7,6 @@ local buf_slug = {}
 local push_timers = {}
 local push_group = nil
 
-local function run(fn)
-  if vim.in_fast_event() then
-    vim.schedule(fn)
-    return
-  end
-  return fn()
-end
-
 local function client()
   return require("md-preview.client")
 end
@@ -106,6 +98,9 @@ function M.open()
   ensure_push_autocmds()
 
   local url = ("http://127.0.0.1:%d/%s"):format(port, url_encode(final))
+  if opts.theme and opts.theme ~= "auto" then
+    url = url .. "?theme=" .. opts.theme
+  end
   local ok = pcall(vim.ui.open, url)
   if not ok then
     vim.notify("md-preview: preview at " .. url, vim.log.levels.INFO)
@@ -145,13 +140,12 @@ function M.setup(new_opts)
     return
   end
   configured = true
-  opts = vim.tbl_deep_extend("force", { port = 8765, idle_minutes = 15 }, new_opts or {})
-
-  run(function()
-    pcall(function()
-      require("md-preview.render").to_html("warmup")
-    end)
-  end)
+  opts = vim.tbl_deep_extend("force", {
+    port = 8765,
+    idle_minutes = 15,
+    theme = "auto",
+    auto_build = true,
+  }, new_opts or {})
 
   vim.api.nvim_create_user_command("MD", function(args)
     local arg = vim.trim(args.args or "")
