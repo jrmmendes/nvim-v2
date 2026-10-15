@@ -5,7 +5,11 @@ return {
     ---@module "blink.cmp"
     ---@type blink.cmp.Config
     opts = {
-      keymap = { preset = "default" },
+      keymap = {
+        preset = "default",
+        ["<Tab>"] = { "select_and_accept", "snippet_forward", "fallback" },
+        ["<S-Tab>"] = { "select_prev", "snippet_backward", "fallback" },
+      },
       appearance = {
         use_nvim_cmp_as_default = true,
         nerd_font_variant = "mono",

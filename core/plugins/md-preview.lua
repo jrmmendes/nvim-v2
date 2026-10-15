@@ -1,0 +1,4 @@
+return {
+  cmd = "PreviewMD",
+  opts = {},
+}
