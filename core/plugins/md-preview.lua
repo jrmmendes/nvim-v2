@@ -1,4 +1,4 @@
 return {
-  cmd = "PreviewMD",
+  cmd = "MD",
   opts = {},
 }

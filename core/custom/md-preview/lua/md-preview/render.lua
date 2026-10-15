@@ -434,7 +434,7 @@ local LIVE_RELOAD = [[
 (function () {
   var current = null;
   function poll() {
-    fetch("/version")
+    fetch(location.pathname.replace(/\/$/, "") + "/version")
       .then(function (r) { return r.text(); })
       .then(function (v) {
         if (current === null) { current = v; }

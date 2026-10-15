@@ -60,14 +60,24 @@ git clone git@github.com:jrmmendes/nvim-v2.git ~/.config/nvim
 ## Markdown preview setup
 
 Markdown preview is a dependency-free local plugin (`core/custom/md-preview/`).
-It renders the current buffer with Neovim's built-in treesitter Markdown parser
-and serves the page over a `vim.uv` HTTP server (bound to `127.0.0.1`); the page
-live-reloads as you edit and write.
+It renders Markdown with Neovim's built-in treesitter parser and serves it from
+a **detached background daemon** (`nvim --headless`, bound to `127.0.0.1`), so
+the preview keeps running after you close Neovim and is reused across sessions.
 
-Open a Markdown file and run `:PreviewMD` (toggle) to start/stop the rendered
-preview in your browser. No keymap is bound. The default port is `8765`; override
-it in the lazy spec with `opts = { port = 9000 }`. There is no binary to download
-and no `build` step.
+Open a Markdown file and run `:MD` to start/ensure the daemon, register the
+current file and open it in your browser. Every markdown file is served at a
+**slug URL** derived from its sanitized path relative to its git root (or your
+home), e.g. `/notes/foo`; multiple files can be served by the same daemon at
+once. `:MD stop` shuts the daemon down (it also removes the state file). No
+keymap is bound.
+
+The daemon exits on its own after **15 minutes of inactivity**, measured from
+the last `:MD` call or any HTTP request. No binary to download and no `build`
+step. Defaults are configurable in the lazy spec:
+
+```lua
+opts = { port = 8765, idle_minutes = 15 }
+```
 
 ## Requirements
 
