@@ -5,6 +5,7 @@ export interface PageInput {
   body: string;
   themeName: string;
   loader?: string;
+  zoomSensitivity?: number;
   meta?: Record<string, unknown>;
 }
 
@@ -13,6 +14,16 @@ const DEFAULT_LOADER = "classic";
 
 function resolveLoaderName(name: string | undefined): string {
   return name && (LOADERS as readonly string[]).includes(name) ? name : DEFAULT_LOADER;
+}
+
+const DEFAULT_ZOOM_SENSITIVITY = 1.1;
+
+function resolveZoomSensitivity(value: number | undefined): number {
+  const n = Number(value);
+  if (!isFinite(n) || n <= 1) {
+    return DEFAULT_ZOOM_SENSITIVITY;
+  }
+  return Math.min(n, 3);
 }
 
 function escapeHtml(text: string): string {
@@ -117,8 +128,25 @@ img{max-width:100%}
 hr{height:1px;border:0;background:var(--mdprv-border);margin:2em 0}
 del{color:var(--mdprv-muted)}
 sup{font-size:.75em}
-pre.mermaid{background:transparent;border:0;text-align:center;overflow:visible}
+pre.mermaid{position:relative;background:transparent;border:0;text-align:center;overflow:visible}
 pre.mermaid svg{max-width:100%;height:auto}
+.mdprv-mermaid-fs{position:absolute;top:.4rem;right:.4rem;z-index:5;display:inline-flex;align-items:center;justify-content:center;width:1.9rem;height:1.9rem;padding:0;border:1px solid var(--mdprv-border);border-radius:6px;background:var(--mdprv-bg);color:var(--mdprv-muted);cursor:pointer;opacity:0;transition:opacity .15s,color .15s,background .15s}
+pre.mermaid:hover .mdprv-mermaid-fs,.mdprv-mermaid-fs:focus-visible{opacity:1}
+.mdprv-mermaid-fs:hover{color:var(--mdprv-fg);background:var(--mdprv-code-bg)}
+.mdprv-mermaid-fs svg{width:1rem;height:1rem;display:block}
+.mdprv-mermaid-lightbox{position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--mdprv-bg) 92%,#000);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .15s ease,visibility .15s ease}
+.mdprv-mermaid-lightbox.mdprv-mermaid-open{opacity:1;visibility:visible;pointer-events:auto}
+.mdprv-mermaid-stage{width:92vw;height:88vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.mdprv-mermaid-zoom{transform-origin:center center;cursor:grab}
+.mdprv-mermaid-zoom.mdprv-mermaid-pan{cursor:grabbing}
+.mdprv-mermaid-tools{position:absolute;bottom:1rem;right:1rem;z-index:2;display:flex;gap:.4rem}
+.mdprv-mermaid-tools button{display:inline-flex;align-items:center;justify-content:center;min-width:2.2rem;height:2.2rem;padding:0 .55rem;border:1px solid var(--mdprv-border);border-radius:6px;background:var(--mdprv-bg);color:var(--mdprv-muted);cursor:pointer;font:inherit;font-size:14px;line-height:1}
+.mdprv-mermaid-tools button:hover{color:var(--mdprv-fg);background:var(--mdprv-code-bg)}
+.mdprv-mermaid-stage svg{max-width:100%;max-height:100%;width:auto;height:auto}
+.mdprv-mermaid-close{position:absolute;top:1rem;right:1rem;display:inline-flex;align-items:center;justify-content:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid var(--mdprv-border);border-radius:50%;background:var(--mdprv-bg);color:var(--mdprv-muted);cursor:pointer}
+.mdprv-mermaid-close:hover{color:var(--mdprv-fg);background:var(--mdprv-code-bg)}
+.mdprv-mermaid-close svg{width:1.1rem;height:1.1rem;display:block}
+body.mdprv-mermaid-lock{overflow:hidden}
 .mdprv-sidebar{position:fixed;top:0;left:0;height:100vh;width:var(--mdprv-sidebar-width);overflow:auto;padding:3rem .9rem 1rem;border-right:1px solid var(--mdprv-border);background:var(--mdprv-bg);z-index:30;transition:width var(--mdprv-ui-dur) ease,padding var(--mdprv-ui-dur) ease,opacity var(--mdprv-ui-dur) ease}
 html.mdprv-left-collapsed .mdprv-sidebar{width:0;padding:0;border-right-color:transparent;opacity:0;overflow:hidden;pointer-events:none}
 .mdprv-theme{display:block;width:100%;font:inherit;font-size:13px;padding:.3rem .5rem;color:var(--mdprv-fg);background:var(--mdprv-code-bg);border:1px solid var(--mdprv-border);border-radius:6px;cursor:pointer}
@@ -148,10 +176,15 @@ html.mdprv-left-collapsed .mdprv-sidebar{width:0;padding:0;border-right-color:tr
 .mdprv-copy:hover{color:var(--mdprv-fg);background:var(--mdprv-code-bg)}
 .mdprv-copy.mdprv-copied{color:var(--mdprv-link);opacity:1}
 .mdprv-copy svg{width:1rem;height:1rem;display:block}
-.mdprv-top{position:fixed;right:1rem;bottom:1.5rem;z-index:45;display:inline-flex;align-items:center;justify-content:center;width:2.4rem;height:2.4rem;padding:0;border:1px solid var(--mdprv-border);border-radius:50%;background:var(--mdprv-bg);color:var(--mdprv-muted);cursor:pointer;opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s,color .15s,background .15s}
+.mdprv-top{position:fixed;right:1rem;bottom:4.4rem;z-index:45;display:inline-flex;align-items:center;justify-content:center;width:2.4rem;height:2.4rem;padding:0;border:1px solid var(--mdprv-border);border-radius:50%;background:var(--mdprv-bg);color:var(--mdprv-muted);cursor:pointer;opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s,color .15s,background .15s}
 .mdprv-top.mdprv-top-visible{opacity:.85;visibility:visible}
 .mdprv-top:hover{color:var(--mdprv-fg);background:var(--mdprv-code-bg);opacity:1}
 .mdprv-top svg{width:1.1rem;height:1.1rem;display:block}
+.mdprv-zen-toggle{position:fixed;right:1rem;bottom:1.5rem;z-index:45;display:inline-flex;align-items:center;justify-content:center;width:2.4rem;height:2.4rem;padding:0;border:1px solid var(--mdprv-border);border-radius:50%;background:var(--mdprv-bg);color:var(--mdprv-muted);cursor:pointer;opacity:.85;transition:color .15s,background .15s,opacity .15s}
+.mdprv-zen-toggle:hover{color:var(--mdprv-fg);background:var(--mdprv-code-bg);opacity:1}
+.mdprv-zen-toggle svg{width:1.1rem;height:1.1rem;display:block}
+html:not(.mdprv-zen) .mdprv-zen-toggle .mdprv-icon-exit{display:none}
+html.mdprv-zen .mdprv-zen-toggle .mdprv-icon-enter{display:none}
 .mdprv-sidebar-head{display:flex;align-items:center;gap:.5rem;margin-bottom:.45rem}
 .mdprv-sidebar-title{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--mdprv-muted)}
 .mdprv-iconbtn{display:inline-flex;align-items:center;justify-content:center;width:1.9rem;height:1.9rem;padding:0;border:1px solid var(--mdprv-border);border-radius:6px;background:var(--mdprv-code-bg);color:var(--mdprv-muted);cursor:pointer;transition:color .15s,background .15s,transform var(--mdprv-ui-dur) ease}
@@ -292,11 +325,132 @@ function buildScripts(theme: ThemeDef, loaderName: string): string {
     }
     return data.mermaid;
   }
+  function decorate(){
+    var pres = document.querySelectorAll("article pre.mermaid");
+    Array.prototype.forEach.call(pres, function(pre){
+      if (!pre.querySelector("svg")) return;
+      if (pre.querySelector(".mdprv-mermaid-fs")) return;
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "mdprv-mermaid-fs";
+      b.setAttribute("aria-label", "View diagram full screen");
+      b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
+      b.addEventListener("click", function(){ openLightbox(pre.querySelector("svg")); });
+      pre.appendChild(b);
+    });
+  }
+  var zoomEl = null;
+  var z = 1;
+  var tx = 0;
+  var ty = 0;
+  function applyZoom(){
+    if (zoomEl) zoomEl.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + z + ")";
+    if (resetBtn) resetBtn.textContent = Math.round(z * 100) + "%";
+  }
+  function setZoom(nz){
+    z = Math.max(0.25, Math.min(8, nz));
+    applyZoom();
+  }
+  function sensitivity(){
+    var raw = null;
+    try { raw = localStorage.getItem("mdprv_zoom_sensitivity"); } catch (e) {}
+    if (raw === null || raw === "") {
+      var m = document.cookie.match(/(?:^|;\\s*)mdprv_zoom_sensitivity=([^;]+)/);
+      if (m) raw = decodeURIComponent(m[1]);
+    }
+    var v = raw !== null && raw !== "" ? parseFloat(raw) : NaN;
+    if (!isFinite(v)) v = parseFloat(document.documentElement.getAttribute("data-zoom-sensitivity")) || 1.1;
+    if (!isFinite(v) || v <= 1) v = 1.1;
+    if (v > 3) v = 3;
+    return v;
+  }
+  function openLightbox(svg){
+    var lb = document.getElementById("mdprv-mermaid-lightbox");
+    var stage = document.getElementById("mdprv-mermaid-stage");
+    if (!lb || !stage || !svg) return;
+    stage.innerHTML = "";
+    zoomEl = document.createElement("div");
+    zoomEl.className = "mdprv-mermaid-zoom";
+    var clone = svg.cloneNode(true);
+    var rect = svg.getBoundingClientRect();
+    var w = rect.width || parseFloat(svg.getAttribute("width")) || 300;
+    var h = rect.height || parseFloat(svg.getAttribute("height")) || 150;
+    var fit = Math.min(stage.clientWidth / w, stage.clientHeight / h);
+    if (!isFinite(fit) || fit <= 0) fit = 1;
+    if (fit > 4) fit = 4;
+    clone.removeAttribute("width");
+    clone.removeAttribute("height");
+    clone.style.maxWidth = "none";
+    clone.style.maxHeight = "none";
+    clone.style.width = (w * fit) + "px";
+    clone.style.height = (h * fit) + "px";
+    zoomEl.appendChild(clone);
+    stage.appendChild(zoomEl);
+    z = 1;
+    tx = 0;
+    ty = 0;
+    applyZoom();
+    lb.classList.add("mdprv-mermaid-open");
+    lb.setAttribute("aria-hidden", "false");
+    document.body.classList.add("mdprv-mermaid-lock");
+  }
+  function closeLightbox(){
+    var lb = document.getElementById("mdprv-mermaid-lightbox");
+    var stage = document.getElementById("mdprv-mermaid-stage");
+    if (!lb) return;
+    lb.classList.remove("mdprv-mermaid-open");
+    lb.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("mdprv-mermaid-lock");
+    if (stage) stage.innerHTML = "";
+    zoomEl = null;
+  }
+  var lbEl = document.getElementById("mdprv-mermaid-lightbox");
+  var resetBtn = lbEl ? lbEl.querySelector(".mdprv-mermaid-reset") : null;
+  var inBtn = lbEl ? lbEl.querySelector(".mdprv-mermaid-in") : null;
+  var outBtn = lbEl ? lbEl.querySelector(".mdprv-mermaid-out") : null;
+  if (lbEl) lbEl.addEventListener("click", function(e){ if (e.target === lbEl) closeLightbox(); });
+  var lbClose = document.querySelector(".mdprv-mermaid-close");
+  if (lbClose) lbClose.addEventListener("click", closeLightbox);
+  if (inBtn) inBtn.addEventListener("click", function(){ setZoom(z * 1.25); });
+  if (outBtn) outBtn.addEventListener("click", function(){ setZoom(z / 1.25); });
+  if (resetBtn) resetBtn.addEventListener("click", function(){ z = 1; tx = 0; ty = 0; applyZoom(); });
+  if (lbEl) lbEl.addEventListener("wheel", function(e){
+    if (!lbEl.classList.contains("mdprv-mermaid-open")) return;
+    e.preventDefault();
+    var s = sensitivity();
+    setZoom(e.deltaY < 0 ? z * s : z / s);
+  }, { passive: false });
+  var stageEl = document.getElementById("mdprv-mermaid-stage");
+  if (stageEl) {
+    var dragging = false;
+    var startX = 0;
+    var startY = 0;
+    stageEl.addEventListener("pointerdown", function(e){
+      if (!zoomEl) return;
+      dragging = true;
+      startX = e.clientX - tx;
+      startY = e.clientY - ty;
+      zoomEl.classList.add("mdprv-mermaid-pan");
+      try { stageEl.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+    stageEl.addEventListener("pointermove", function(e){
+      if (!dragging) return;
+      tx = e.clientX - startX;
+      ty = e.clientY - startY;
+      applyZoom();
+    });
+    stageEl.addEventListener("pointerup", function(){
+      dragging = false;
+      if (zoomEl) zoomEl.classList.remove("mdprv-mermaid-pan");
+    });
+  }
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape") closeLightbox(); });
   if (typeof mermaid !== "undefined") {
     try {
       mermaid.initialize(Object.assign({ startOnLoad: false, securityLevel: "strict" }, cfg()));
-      mermaid.run({ querySelector: "pre.mermaid" });
-    } catch (e) { console.error("md-preview: mermaid", e); }
+      var pr = mermaid.run({ querySelector: "pre.mermaid" });
+      if (pr && pr.then) { pr.then(decorate, decorate); } else { decorate(); }
+    } catch (e) { console.error("md-preview: mermaid", e); decorate(); }
   }
 })();
 (function(){
@@ -671,7 +825,48 @@ function buildScripts(theme: ThemeDef, loaderName: string): string {
     if (e.key !== "z" && e.key !== "Z") return;
     if (isEditable(e.target)) return;
     root.classList.toggle("mdprv-zen");
+    if (window.__mdprvSyncZen) window.__mdprvSyncZen();
   });
+})();
+(function(){
+  var zroot = document.documentElement;
+  var zbtn = document.getElementById("mdprv-zen-toggle");
+  function sync(){
+    if (!zbtn) return;
+    var on = zroot.classList.contains("mdprv-zen");
+    zbtn.setAttribute("aria-pressed", on ? "true" : "false");
+    zbtn.setAttribute("aria-label", on ? "Exit zen mode" : "Enter zen mode");
+  }
+  if (zbtn) zbtn.addEventListener("click", function(){ zroot.classList.toggle("mdprv-zen"); sync(); });
+  sync();
+  window.__mdprvSyncZen = sync;
+})();
+(function(){
+  var input = document.getElementById("mdprv-zoom-sens");
+  if (!input) return;
+  function current(){
+    var raw = null;
+    try { raw = localStorage.getItem("mdprv_zoom_sensitivity"); } catch (e) {}
+    if (raw === null || raw === "") {
+      var m = document.cookie.match(/(?:^|;\s*)mdprv_zoom_sensitivity=([^;]+)/);
+      if (m) raw = decodeURIComponent(m[1]);
+    }
+    var v = raw !== null && raw !== "" ? parseFloat(raw) : NaN;
+    if (!isFinite(v)) v = parseFloat(document.documentElement.getAttribute("data-zoom-sensitivity")) || 1.1;
+    return v;
+  }
+  input.value = String(current());
+  function commit(){
+    var v = parseFloat(input.value);
+    if (!isFinite(v) || v <= 1) v = 1.1;
+    if (v > 3) v = 3;
+    v = Math.round(v * 100) / 100;
+    input.value = String(v);
+    document.cookie = "mdprv_zoom_sensitivity=" + encodeURIComponent(String(v)) + ";path=/;max-age=31536000;SameSite=Lax";
+    try { localStorage.setItem("mdprv_zoom_sensitivity", String(v)); } catch (e) {}
+  }
+  input.addEventListener("change", commit);
+  input.addEventListener("blur", commit);
 })();
 (function(){
   var list = document.getElementById("mdprv-history-list");
@@ -722,6 +917,7 @@ function buildScripts(theme: ThemeDef, loaderName: string): string {
 export function renderPage(input: PageInput): string {
   const theme = getTheme(input.themeName);
   const loader = resolveLoaderName(input.loader);
+  const zoomSensitivity = resolveZoomSensitivity(input.zoomSensitivity);
   const css = [
     themeCss(theme),
     BASE_CSS,
@@ -744,7 +940,7 @@ export function renderPage(input: PageInput): string {
 
   return [
     "<!DOCTYPE html>",
-    `<html lang="en" data-loader="${escapeHtml(loader)}">`,
+    `<html lang="en" data-loader="${escapeHtml(loader)}" data-zoom-sensitivity="${zoomSensitivity}">`,
     "<head>",
     '<meta charset="utf-8">',
     '<meta name="viewport" content="width=device-width, initial-scale=1">',
@@ -776,6 +972,8 @@ export function renderPage(input: PageInput): string {
     "</div>",
     '<label class="mdprv-field-label" for="mdprv-loader">Loader</label>',
     `<select id="mdprv-loader" class="mdprv-theme" aria-label="Loading indicator">${loaderOptions}</select>`,
+    '<label class="mdprv-field-label" for="mdprv-zoom-sens">Zoom sensitivity (scroll)</label>',
+    `<input id="mdprv-zoom-sens" class="mdprv-input" type="number" min="1.01" max="3" step="0.05" value="${zoomSensitivity}" inputmode="decimal" aria-label="Mermaid zoom scroll sensitivity">`,
     "</div>",
     '<button type="button" id="mdprv-sidebar-toggle" class="mdprv-sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M9 3v18"></path></svg></button>',
     '<aside class="mdprv-history" id="mdprv-history" aria-label="Recent previews">',
@@ -786,7 +984,9 @@ export function renderPage(input: PageInput): string {
     '<div class="mdprv-drag mdprv-drag-left" id="mdprv-drag-left" role="separator" aria-orientation="vertical" aria-label="Resize content width (left)"></div>',
     '<div class="mdprv-drag mdprv-drag-right" id="mdprv-drag-right" role="separator" aria-orientation="vertical" aria-label="Resize content width (right)"></div>',
     '<button type="button" id="mdprv-top" class="mdprv-top" aria-label="Back to top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"></path><path d="M5 12l7-7 7 7"></path></svg></button>',
+    '<button type="button" id="mdprv-zen-toggle" class="mdprv-zen-toggle" aria-label="Enter zen mode" aria-pressed="false"><svg class="mdprv-icon-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"></path><path d="M16 3h3a2 2 0 0 1 2 2v3"></path><path d="M8 21H5a2 2 0 0 1-2-2v-3"></path><path d="M16 21h3a2 2 0 0 0 2-2v-3"></path></svg><svg class="mdprv-icon-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3v3a2 2 0 0 1-2 2H3"></path><path d="M21 8h-3a2 2 0 0 1-2-2V3"></path><path d="M3 16h3a2 2 0 0 1 2 2v3"></path><path d="M16 21v-3a2 2 0 0 1 2-2h3"></path></svg></button>',
     `<div id="mdprv-loader-overlay" class="mdprv-loader-overlay" aria-hidden="true"><div id="mdprv-loader-spinner" class="mdprv-loader mdprv-loader--${escapeHtml(loader)}"></div></div>`,
+    '<div id="mdprv-mermaid-lightbox" class="mdprv-mermaid-lightbox" aria-hidden="true"><button type="button" class="mdprv-mermaid-close" aria-label="Close full screen (Esc)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="M6 6l12 12"></path></svg></button><div class="mdprv-mermaid-tools"><button type="button" class="mdprv-mermaid-out" aria-label="Zoom out">&minus;</button><button type="button" class="mdprv-mermaid-reset" aria-label="Reset zoom">100%</button><button type="button" class="mdprv-mermaid-in" aria-label="Zoom in">+</button></div><div class="mdprv-mermaid-stage" id="mdprv-mermaid-stage"></div></div>',
     '<article class="markdown-body">',
     renderMeta(input.meta),
     input.body,

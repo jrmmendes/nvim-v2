@@ -91,6 +91,7 @@ opts = {
   theme = "auto",      -- auto | github-dark | github-light | dracula | nord |
                        -- solarized-dark | solarized-light | gruvbox-dark | gruvbox-light
   loader = "classic",  -- classic | dots | bars | ring | pulse | braille
+  zoom_sensitivity = 1.1, -- mouse-wheel zoom factor in the Mermaid lightbox (1.01–3)
   auto_build = true,   -- build the server binary on first :MD if missing
 }
 ```
@@ -106,7 +107,13 @@ copy button in its top-right corner, and a back-to-top button appears on the
 right once you scroll down. The left sidebar and a new recent-previews sidebar
 are collapsible (their state is remembered), a gear opens a settings panel with
 the theme picker, a font/custom-font-family control and a loader picker, and
-pressing `Z` toggles zen mode (hides both sidebars). Changing the theme, font or
+pressing `Z` toggles zen mode (hides both sidebars). A bottom-right fullscreen
+icon toggles zen mode too (the back-to-top button sits just above it), and each
+Mermaid diagram has a fullscreen button that opens it in a lightbox (close with
+the button, `Esc` or a backdrop click); the lightbox fits the diagram to the
+screen at 100% and supports zoom (`+`/`−` buttons, a percentage/reset control,
+mouse-wheel zoom, and drag-to-pan); the wheel factor is `opts.zoom_sensitivity`
+(default `1.1`, editable in the settings panel). Changing the theme, font or
 loader covers the transition with a full-screen blur and a centered animated
 loader (no layout-shift flash); the loader is `opts.loader` or the persisted
 per-browser choice, one of `classic`, `dots`, `bars`, `ring`, `pulse` or

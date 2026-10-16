@@ -222,6 +222,7 @@ function M.spawn(opts)
       MDPRV_STATE = state_path(),
       MDPRV_THEME = tostring(opts.theme or "auto"),
       MDPRV_LOADER = tostring(opts.loader or "classic"),
+      MDPRV_ZOOM_SENSITIVITY = tostring(opts.zoom_sensitivity or 1.1),
     },
   })
 end

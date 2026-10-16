@@ -54,6 +54,7 @@ const port = Number(process.env.MDPRV_PORT) || DEFAULT_PORT;
 const idleMs = Math.max(1, (Number(process.env.MDPRV_IDLE) || DEFAULT_IDLE) * 60 * 1000);
 const defaultTheme = process.env.MDPRV_THEME || "auto";
 const defaultLoader = process.env.MDPRV_LOADER || "classic";
+const defaultZoomSensitivity = Number(process.env.MDPRV_ZOOM_SENSITIVITY) || 1.1;
 
 function statePath(): string {
   if (process.env.MDPRV_STATE) {
@@ -274,7 +275,7 @@ async function serveSlug(route: string, req: Request, url: URL): Promise<Respons
     typeof data.title === "string" || typeof data.title === "number" ? String(data.title).trim() : "";
   const title = metaTitle || (entry.path ? basename(entry.path) : "Markdown Preview");
   const body = await renderMarkdown(normalizeContent(markdownBody), themeName, slug);
-  return new Response(renderPage({ title, body, themeName, loader: defaultLoader, meta: data }), {
+  return new Response(renderPage({ title, body, themeName, loader: defaultLoader, zoomSensitivity: defaultZoomSensitivity, meta: data }), {
     headers: baseHeaders("text/html; charset=utf-8"),
   });
 }

@@ -192,6 +192,7 @@ function M.setup(new_opts)
     idle_minutes = 15,
     theme = "auto",
     loader = "classic",
+    zoom_sensitivity = 1.1,
     auto_build = true,
   }, new_opts or {})
 
