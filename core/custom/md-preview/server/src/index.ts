@@ -53,6 +53,7 @@ let idleTimer: ReturnType<typeof setInterval> | undefined;
 const port = Number(process.env.MDPRV_PORT) || DEFAULT_PORT;
 const idleMs = Math.max(1, (Number(process.env.MDPRV_IDLE) || DEFAULT_IDLE) * 60 * 1000);
 const defaultTheme = process.env.MDPRV_THEME || "auto";
+const defaultLoader = process.env.MDPRV_LOADER || "classic";
 
 function statePath(): string {
   if (process.env.MDPRV_STATE) {
@@ -121,6 +122,41 @@ function readDisk(filePath: string): string | null {
   }
 }
 
+function titleFor(entry: SlugEntry): string {
+  let content = entry.content;
+  if (content === null || content === undefined) {
+    content = entry.path ? readDisk(entry.path) : null;
+  }
+  if (typeof content === "string") {
+    try {
+      const { data } = parseFrontmatter(content);
+      const raw = data.title;
+      if (typeof raw === "string" || typeof raw === "number") {
+        const trimmed = String(raw).trim();
+        if (trimmed !== "") {
+          return trimmed;
+        }
+      }
+    } catch {
+      /* malformed frontmatter: fall through to basename */
+    }
+  }
+  if (entry.path) {
+    return basename(entry.path);
+  }
+  return "";
+}
+
+function slugList(): Array<{ slug: string; path: string; title: string }> {
+  const entries = Array.from(slugs.entries());
+  entries.reverse();
+  return entries.map(([slug, entry]) => ({
+    slug,
+    path: entry.path,
+    title: titleFor(entry) || slug,
+  }));
+}
+
 function watchSlug(slug: string): void {
   const entry = slugs.get(slug);
   if (!entry || !entry.path || entry.watcher) {
@@ -167,6 +203,8 @@ function register(rawSlug: string, rawPath: string, content: string | null): str
   if (entry.path) {
     watchSlug(slug);
   }
+  slugs.delete(slug);
+  slugs.set(slug, entry);
   return slug;
 }
 
@@ -236,7 +274,7 @@ async function serveSlug(route: string, req: Request, url: URL): Promise<Respons
     typeof data.title === "string" || typeof data.title === "number" ? String(data.title).trim() : "";
   const title = metaTitle || (entry.path ? basename(entry.path) : "Markdown Preview");
   const body = await renderMarkdown(normalizeContent(markdownBody), themeName, slug);
-  return new Response(renderPage({ title, body, themeName, meta: data }), {
+  return new Response(renderPage({ title, body, themeName, loader: defaultLoader, meta: data }), {
     headers: baseHeaders("text/html; charset=utf-8"),
   });
 }
@@ -307,6 +345,9 @@ async function handle(req: Request): Promise<Response> {
   }
   if ((method === "GET" || method === "HEAD") && route === "/__themes") {
     return json({ themes: themeNames() });
+  }
+  if ((method === "GET" || method === "HEAD") && route === "/__slugs") {
+    return json({ slugs: slugList() });
   }
   if ((method === "GET" || method === "HEAD") && route === "/__assets/mermaid.min.js") {
     return mermaidAsset();

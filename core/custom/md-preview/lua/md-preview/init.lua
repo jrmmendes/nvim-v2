@@ -107,14 +107,7 @@ function M.open()
   end
 end
 
-function M.stop()
-  local port = nil
-  for _, info in pairs(buf_slug) do
-    port = info.port
-    break
-  end
-  client().shutdown(port)
-
+local function cleanup()
   buf_slug = {}
   for bufnr, timer in pairs(push_timers) do
     if timer and not timer:is_closing() then
@@ -127,8 +120,62 @@ function M.stop()
     pcall(vim.api.nvim_del_augroup_by_id, push_group)
     push_group = nil
   end
+end
 
+function M.stop()
+  local port = nil
+  for _, info in pairs(buf_slug) do
+    port = info.port
+    break
+  end
+  client().shutdown(port)
+  cleanup()
   vim.notify("md-preview: stopped", vim.log.levels.INFO)
+end
+
+function M.reload()
+  local c = client()
+  local state = c.read_state()
+  c.shutdown(state and state.port or nil)
+  if state and state.pid then
+    local deadline = vim.uv.now() + 3000
+    while vim.uv.now() < deadline and c.is_alive(state.pid) do
+      vim.wait(50)
+    end
+  end
+  cleanup()
+
+  local built = c.build(opts)
+  if not built then
+    vim.notify("md-preview: reload aborted (server build failed)", vim.log.levels.ERROR)
+    return
+  end
+
+  for name in pairs(package.loaded) do
+    if name == "md-preview" or name:match("^md%-preview%.") then
+      package.loaded[name] = nil
+    end
+  end
+
+  local loaded, fresh = pcall(require, "md-preview")
+  if not loaded or type(fresh) ~= "table" then
+    vim.notify("md-preview: reload failed: " .. tostring(fresh), vim.log.levels.ERROR)
+    return
+  end
+
+  local setup_ok, setup_err = pcall(fresh.setup, opts)
+  if not setup_ok then
+    vim.notify("md-preview: reload failed at setup: " .. tostring(setup_err), vim.log.levels.ERROR)
+    return
+  end
+  vim.notify("md-preview: plugin reloaded", vim.log.levels.INFO)
+
+  local port = require("md-preview.client").ensure(opts)
+  if port then
+    vim.notify("md-preview: daemon restarted on port " .. port, vim.log.levels.INFO)
+  else
+    vim.notify("md-preview: daemon did not start after reload", vim.log.levels.WARN)
+  end
 end
 
 function M.start()
@@ -144,6 +191,7 @@ function M.setup(new_opts)
     port = 8765,
     idle_minutes = 15,
     theme = "auto",
+    loader = "classic",
     auto_build = true,
   }, new_opts or {})
 
@@ -153,15 +201,17 @@ function M.setup(new_opts)
       M.open()
     elseif arg == "stop" then
       M.stop()
+    elseif arg == "reload" then
+      M.reload()
     else
       vim.notify("md-preview: unknown argument " .. arg, vim.log.levels.WARN)
     end
   end, {
     nargs = "*",
     complete = function()
-      return { "stop" }
+      return { "stop", "reload" }
     end,
-    desc = "Markdown preview: start/ensure daemon and open, or ':MD stop'",
+    desc = "Markdown preview: start/ensure daemon and open, ':MD stop', or ':MD reload'",
   })
 end
 

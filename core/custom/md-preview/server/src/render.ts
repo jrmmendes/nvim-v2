@@ -71,7 +71,7 @@ function createRenderer(themeName: string): MarkdownIt {
     html: true,
     linkify: true,
     typographer: true,
-    breaks: true,
+    breaks: false,
   });
   md.enable(["table", "strikethrough"]);
   md.use(taskLists, { enabled: true, label: true });

@@ -4,10 +4,16 @@ export interface PageInput {
   title: string;
   body: string;
   themeName: string;
+  loader?: string;
   meta?: Record<string, unknown>;
 }
 
-const META_FIELDS = ["author", "date", "description", "tags"];
+const LOADERS = ["classic", "dots", "bars", "ring", "pulse", "braille"] as const;
+const DEFAULT_LOADER = "classic";
+
+function resolveLoaderName(name: string | undefined): string {
+  return name && (LOADERS as readonly string[]).includes(name) ? name : DEFAULT_LOADER;
+}
 
 function escapeHtml(text: string): string {
   return text
@@ -18,35 +24,45 @@ function escapeHtml(text: string): string {
 }
 
 function metaValueHtml(value: unknown): string {
+  if (value === undefined || value === null) {
+    return "";
+  }
   if (Array.isArray(value)) {
     return value
-      .map((item) => `<span class="mdprv-tag">${escapeHtml(String(item))}</span>`)
+      .map((item) => {
+        const text =
+          typeof item === "object" && item !== null ? JSON.stringify(item) : String(item);
+        return `<span class="mdprv-tag">${escapeHtml(text)}</span>`;
+      })
       .join(" ");
   }
+  if (typeof value === "object") {
+    return `<code>${escapeHtml(JSON.stringify(value))}</code>`;
+  }
   return escapeHtml(String(value));
+}
+
+function hasValue(value: unknown): boolean {
+  return value !== undefined && value !== null && value !== "";
 }
 
 function renderMeta(meta: Record<string, unknown> | undefined): string {
   if (!meta) {
     return "";
   }
-  const items: string[] = [];
-  for (const key of META_FIELDS) {
-    const value = meta[key];
-    if (value === undefined || value === null || value === "") {
-      continue;
-    }
-    if (Array.isArray(value) && value.length === 0) {
-      continue;
-    }
-    items.push(
-      `<span class="mdprv-meta-item"><span class="mdprv-meta-key">${escapeHtml(key)}</span>${metaValueHtml(value)}</span>`
-    );
-  }
-  if (items.length === 0) {
+  const keys = Object.keys(meta);
+  if (keys.length === 0) {
     return "";
   }
-  return `<div class="mdprv-meta">${items.join("")}</div>`;
+  const summary = hasValue(meta.date)
+    ? String(meta.date)
+    : hasValue(meta.title)
+      ? String(meta.title)
+      : "Metadata";
+  const rows = keys
+    .map((key) => `<dt>${escapeHtml(key)}</dt><dd>${metaValueHtml(meta[key])}</dd>`)
+    .join("");
+  return `<details class="mdprv-meta-card"><summary>${escapeHtml(summary)}</summary><dl>${rows}</dl></details>`;
 }
 
 function rootVars(v: PageVars): string {
@@ -74,10 +90,11 @@ function themeCss(theme: ThemeDef): string {
   return "";
 }
 
-const BASE_CSS = `:root{color-scheme:light dark}
+const BASE_CSS = `:root{color-scheme:light dark;--mdprv-content-width:46rem;--mdprv-code-line-height:1;--mdprv-sidebar-width:16rem;--mdprv-scroll-offset:7rem;--mdprv-ui-dur:.18s}
 *{box-sizing:border-box}
-body{margin:0 auto;max-width:46rem;padding:2.5rem 1.25rem 6rem;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:17px;line-height:1.65;color:var(--mdprv-fg);background:var(--mdprv-bg);word-wrap:break-word}
-h1,h2,h3,h4,h5,h6{margin:1.8em 0 .6em;line-height:1.25;font-weight:600}
+body{margin:0;padding:0;font-family:var(--mdprv-font,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif);font-size:17px;line-height:1.65;color:var(--mdprv-fg);background:var(--mdprv-bg);word-wrap:break-word}
+article.markdown-body{max-width:var(--mdprv-content-width);margin:0 auto;padding:2.5rem 1.25rem 6rem}
+h1,h2,h3,h4,h5,h6{margin:1.8em 0 .6em;line-height:1.25;font-weight:600;scroll-margin-top:var(--mdprv-scroll-offset)}
 h1{font-size:2em;padding-bottom:.3em;border-bottom:1px solid var(--mdprv-border)}
 h2{font-size:1.5em;padding-bottom:.3em;border-bottom:1px solid var(--mdprv-border)}
 h3{font-size:1.25em}
@@ -88,6 +105,7 @@ code{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
 pre{background:var(--mdprv-code-bg);border:1px solid var(--mdprv-border);border-radius:6px;padding:1em;overflow:auto}
 pre code{background:none;padding:0;font-size:.85em}
 pre.shiki{background:var(--mdprv-code-bg)}
+pre:not(.mermaid),pre:not(.mermaid) code,pre.shiki,pre.shiki code{line-height:var(--mdprv-code-line-height)}
 blockquote{margin:0 0 1em;padding:0 1em;color:var(--mdprv-quote);border-left:.25em solid var(--mdprv-border)}
 ul,ol{margin:0 0 1em;padding-left:2em}
 li{margin:.25em 0}
@@ -101,11 +119,93 @@ del{color:var(--mdprv-muted)}
 sup{font-size:.75em}
 pre.mermaid{background:transparent;border:0;text-align:center;overflow:visible}
 pre.mermaid svg{max-width:100%;height:auto}
-.mdprv-theme-toggle{position:fixed;top:.75rem;right:.75rem;z-index:10;font:inherit;font-size:13px;padding:.25rem .5rem;color:var(--mdprv-fg);background:var(--mdprv-code-bg);border:1px solid var(--mdprv-border);border-radius:6px;cursor:pointer}
-.mdprv-meta{display:flex;flex-wrap:wrap;gap:.35rem 1.25rem;margin:0 0 1.5rem;padding:.6rem .8rem;border:1px solid var(--mdprv-border);border-radius:6px;background:var(--mdprv-code-bg);font-size:.85em;color:var(--mdprv-muted)}
-.mdprv-meta-item{display:inline-flex;align-items:center;gap:.35rem}
-.mdprv-meta-key{font-weight:600;color:var(--mdprv-fg);text-transform:uppercase;font-size:.85em;letter-spacing:.03em}
-.mdprv-tag{display:inline-block;padding:.05rem .5rem;border:1px solid var(--mdprv-border);border-radius:999px;background:var(--mdprv-bg)}`;
+.mdprv-sidebar{position:fixed;top:0;left:0;height:100vh;width:var(--mdprv-sidebar-width);overflow:auto;padding:3rem .9rem 1rem;border-right:1px solid var(--mdprv-border);background:var(--mdprv-bg);z-index:30;transition:width var(--mdprv-ui-dur) ease,padding var(--mdprv-ui-dur) ease,opacity var(--mdprv-ui-dur) ease}
+html.mdprv-left-collapsed .mdprv-sidebar{width:0;padding:0;border-right-color:transparent;opacity:0;overflow:hidden;pointer-events:none}
+.mdprv-theme{display:block;width:100%;font:inherit;font-size:13px;padding:.3rem .5rem;color:var(--mdprv-fg);background:var(--mdprv-code-bg);border:1px solid var(--mdprv-border);border-radius:6px;cursor:pointer}
+.mdprv-toc{margin-top:1rem;font-size:13.5px}
+.mdprv-toc ul{list-style:none;margin:0;padding:0}
+.mdprv-toc li{margin:.1rem 0}
+.mdprv-toc a{display:block;padding:.2rem .35rem;border-radius:5px;color:var(--mdprv-muted);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mdprv-toc a:hover{background:var(--mdprv-code-bg);color:var(--mdprv-fg)}
+.mdprv-toc a.active{color:var(--mdprv-link);background:var(--mdprv-code-bg);font-weight:600}
+.mdprv-drag{position:fixed;top:0;bottom:0;width:8px;z-index:40;cursor:col-resize;touch-action:none}
+.mdprv-drag::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:1px;transform:translateX(-50%);background:var(--mdprv-border);transition:background .15s,width .15s}
+.mdprv-drag:hover::before,.mdprv-drag.mdprv-dragging::before{background:var(--mdprv-link);width:2px}
+.mdprv-drag-left{left:calc(50% - var(--mdprv-content-width) / 2)}
+.mdprv-drag-right{right:calc(50% - var(--mdprv-content-width) / 2)}
+.mdprv-meta-card{margin:0 0 1.5rem;border:1px solid var(--mdprv-border);border-radius:6px;background:var(--mdprv-code-bg);font-size:.85em;color:var(--mdprv-muted);overflow:hidden}
+.mdprv-meta-card>summary{cursor:pointer;padding:.55rem .8rem;list-style:none;color:var(--mdprv-fg);font-weight:600}
+.mdprv-meta-card>summary::-webkit-details-marker{display:none}
+.mdprv-meta-card>summary::before{content:"\\25B8";display:inline-block;margin-right:.5rem;color:var(--mdprv-muted);transition:transform .15s}
+.mdprv-meta-card[open]>summary::before{transform:rotate(90deg)}
+.mdprv-meta-card dl{margin:0;padding:0 .8rem .7rem;display:grid;grid-template-columns:auto 1fr;gap:.4rem .8rem}
+.mdprv-meta-card dt{font-weight:600;color:var(--mdprv-fg);text-transform:uppercase;font-size:.8em;letter-spacing:.03em;align-self:center}
+.mdprv-meta-card dd{margin:0;display:flex;flex-wrap:wrap;gap:.35rem;align-items:center}
+.mdprv-tag{display:inline-block;padding:.05rem .5rem;border:1px solid var(--mdprv-border);border-radius:999px;background:var(--mdprv-bg)}
+.mdprv-code{position:relative}
+.mdprv-copy{position:absolute;top:.4rem;right:.4rem;display:inline-flex;align-items:center;justify-content:center;width:1.9rem;height:1.9rem;padding:0;border:1px solid var(--mdprv-border);border-radius:5px;background:var(--mdprv-bg);color:var(--mdprv-muted);cursor:pointer;opacity:0;transition:opacity .15s,color .15s,background .15s}
+.mdprv-code:hover .mdprv-copy,.mdprv-copy:focus-visible{opacity:1}
+.mdprv-copy:hover{color:var(--mdprv-fg);background:var(--mdprv-code-bg)}
+.mdprv-copy.mdprv-copied{color:var(--mdprv-link);opacity:1}
+.mdprv-copy svg{width:1rem;height:1rem;display:block}
+.mdprv-top{position:fixed;right:1rem;bottom:1.5rem;z-index:45;display:inline-flex;align-items:center;justify-content:center;width:2.4rem;height:2.4rem;padding:0;border:1px solid var(--mdprv-border);border-radius:50%;background:var(--mdprv-bg);color:var(--mdprv-muted);cursor:pointer;opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s,color .15s,background .15s}
+.mdprv-top.mdprv-top-visible{opacity:.85;visibility:visible}
+.mdprv-top:hover{color:var(--mdprv-fg);background:var(--mdprv-code-bg);opacity:1}
+.mdprv-top svg{width:1.1rem;height:1.1rem;display:block}
+.mdprv-sidebar-head{display:flex;align-items:center;gap:.5rem;margin-bottom:.45rem}
+.mdprv-sidebar-title{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--mdprv-muted)}
+.mdprv-iconbtn{display:inline-flex;align-items:center;justify-content:center;width:1.9rem;height:1.9rem;padding:0;border:1px solid var(--mdprv-border);border-radius:6px;background:var(--mdprv-code-bg);color:var(--mdprv-muted);cursor:pointer;transition:color .15s,background .15s,transform var(--mdprv-ui-dur) ease}
+.mdprv-iconbtn:hover{color:var(--mdprv-fg)}
+.mdprv-iconbtn svg{width:1.05rem;height:1.05rem;display:block}
+.mdprv-settings{position:fixed;bottom:3rem;left:.6rem;width:calc(var(--mdprv-sidebar-width) - 1.2rem);max-height:70vh;overflow:auto;z-index:60;padding:.6rem;border:1px solid var(--mdprv-border);border-radius:6px;background:var(--mdprv-bg);box-shadow:0 8px 28px rgba(0,0,0,.28)}
+.mdprv-settings[hidden]{display:none}
+.mdprv-field-label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--mdprv-muted);margin:.55rem 0 .3rem}
+.mdprv-field-label:first-child{margin-top:0}
+.mdprv-input{display:block;width:100%;font:inherit;font-size:13px;padding:.3rem .5rem;color:var(--mdprv-fg);background:var(--mdprv-bg);border:1px solid var(--mdprv-border);border-radius:6px}
+.mdprv-font-row{display:flex;flex-direction:column;gap:.35rem}
+.mdprv-font-actions{display:flex;gap:.35rem}
+.mdprv-btn{flex:1;font:inherit;font-size:12px;padding:.3rem .45rem;color:var(--mdprv-fg);background:var(--mdprv-bg);border:1px solid var(--mdprv-border);border-radius:6px;cursor:pointer}
+.mdprv-btn:hover{background:var(--mdprv-code-bg)}
+.mdprv-sidebar-toggle,.mdprv-history-toggle,.mdprv-settings-toggle{position:fixed;z-index:50;display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;padding:0;border:1px solid var(--mdprv-border);border-radius:6px;background:var(--mdprv-bg);color:var(--mdprv-muted);cursor:pointer;transition:opacity var(--mdprv-ui-dur) ease,visibility var(--mdprv-ui-dur) ease,color .15s,background .15s}
+.mdprv-sidebar-toggle{top:.6rem;left:.6rem}
+.mdprv-history-toggle{top:.6rem;right:.6rem}
+.mdprv-settings-toggle{bottom:.6rem;left:.6rem}
+.mdprv-sidebar-toggle:hover,.mdprv-history-toggle:hover,.mdprv-settings-toggle:hover{color:var(--mdprv-fg);background:var(--mdprv-code-bg)}
+.mdprv-sidebar-toggle svg,.mdprv-history-toggle svg,.mdprv-settings-toggle svg{width:1.1rem;height:1.1rem;display:block}
+.mdprv-history{position:fixed;top:0;right:0;height:100vh;width:var(--mdprv-sidebar-width);overflow:auto;padding:3rem .9rem 1rem;border-left:1px solid var(--mdprv-border);background:var(--mdprv-bg);z-index:30;transition:width var(--mdprv-ui-dur) ease,padding var(--mdprv-ui-dur) ease,opacity var(--mdprv-ui-dur) ease}
+html.mdprv-right-collapsed .mdprv-history{width:0;padding:0;border-left-color:transparent;opacity:0;overflow:hidden;pointer-events:none}
+.mdprv-history-list{list-style:none;margin:0;padding:0;font-size:13.5px}
+.mdprv-history-list li{margin:.1rem 0}
+.mdprv-history-list a{display:block;padding:.25rem .35rem;border-radius:5px;color:var(--mdprv-muted);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mdprv-history-list a:hover{background:var(--mdprv-code-bg);color:var(--mdprv-fg)}
+.mdprv-history-list a.active{color:var(--mdprv-link);background:var(--mdprv-code-bg);font-weight:600}
+html.mdprv-zen .mdprv-sidebar,html.mdprv-zen .mdprv-history{width:0;padding:0;border-color:transparent;opacity:0;overflow:hidden;pointer-events:none}
+html.mdprv-zen .mdprv-sidebar-toggle,html.mdprv-zen .mdprv-history-toggle,html.mdprv-zen .mdprv-settings-toggle{opacity:0;visibility:hidden;pointer-events:none}
+html.mdprv-zen .mdprv-settings{display:none}
+html.mdprv-zen .mdprv-drag{opacity:0;visibility:hidden;pointer-events:none}
+.mdprv-loader-overlay{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--mdprv-bg) 55%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .15s ease,visibility .15s ease}
+.mdprv-loader-overlay.mdprv-loader-active{opacity:1;visibility:visible;pointer-events:auto}
+.mdprv-loader{position:relative;width:2rem;height:2rem;color:var(--mdprv-link)}
+.mdprv-loader--classic{width:2rem;height:2rem;border:.2rem solid var(--mdprv-border);border-top-color:var(--mdprv-link);border-radius:50%;animation:mdprv-spin .8s linear infinite}
+.mdprv-loader--dots{width:.55rem;height:.55rem;border-radius:50%;background:var(--mdprv-link);animation:mdprv-dots 1s ease-in-out infinite}
+.mdprv-loader--dots::before,.mdprv-loader--dots::after{content:"";position:absolute;top:0;width:.55rem;height:.55rem;border-radius:50%;background:var(--mdprv-link);animation:mdprv-dots 1s ease-in-out infinite}
+.mdprv-loader--dots::before{left:-.95rem;animation-delay:-.16s}
+.mdprv-loader--dots::after{left:.95rem;animation-delay:.16s}
+.mdprv-loader--bars{width:.28rem;height:1.4rem;border-radius:2px;background:var(--mdprv-link);animation:mdprv-bars 1s ease-in-out infinite}
+.mdprv-loader--bars::before,.mdprv-loader--bars::after{content:"";position:absolute;top:50%;width:.28rem;height:1.4rem;border-radius:2px;background:var(--mdprv-link);transform:translateY(-50%);animation:mdprv-bars 1s ease-in-out infinite}
+.mdprv-loader--bars::before{left:-.5rem;animation-delay:-.2s}
+.mdprv-loader--bars::after{left:.5rem;animation-delay:.2s}
+.mdprv-loader--ring{width:2rem;height:2rem;border:.18rem solid var(--mdprv-link);border-radius:50%;animation:mdprv-ring 1.2s ease-out infinite}
+.mdprv-loader--ring::after{content:"";position:absolute;inset:-.18rem;border:.18rem solid var(--mdprv-link);border-radius:50%;animation:mdprv-ring 1.2s ease-out infinite;animation-delay:-.6s}
+.mdprv-loader--pulse{width:2rem;height:2rem;border-radius:50%;background:var(--mdprv-link);animation:mdprv-pulse 1s ease-out infinite}
+.mdprv-loader--braille{width:2rem;height:2rem;display:flex;align-items:center;justify-content:center;font-size:2rem;line-height:1;color:var(--mdprv-link)}
+.mdprv-loader--braille::before{content:"⠋";font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;animation:mdprv-braille 1s steps(1,end) infinite}
+@keyframes mdprv-spin{to{transform:rotate(360deg)}}
+@keyframes mdprv-dots{0%,80%,100%{transform:translateY(0);opacity:.5}40%{transform:translateY(-.6rem);opacity:1}}
+@keyframes mdprv-bars{0%,100%{height:.5rem}50%{height:1.6rem}}
+@keyframes mdprv-ring{0%{transform:scale(.6);opacity:1}100%{transform:scale(1.35);opacity:0}}
+@keyframes mdprv-pulse{0%{transform:scale(0);opacity:1}100%{transform:scale(1);opacity:0}}
+@keyframes mdprv-braille{0%{content:"⠋"}9%{content:"⠙"}18%{content:"⠹"}27%{content:"⠸"}36%{content:"⠼"}45%{content:"⠴"}54%{content:"⠦"}63%{content:"⠧"}72%{content:"⠇"}81%{content:"⠏"}90%,100%{content:"⠋"}}`;
 
 const SHIKI_DUAL_CSS = `@media (prefers-color-scheme: dark){.shiki,.shiki span{color:var(--shiki-dark)!important;background-color:var(--shiki-dark-bg)!important}}`;
 
@@ -113,13 +213,77 @@ function scriptSafe(value: unknown): string {
   return JSON.stringify(value).replace(/</g, "\\u003c");
 }
 
-function buildScripts(theme: ThemeDef): string {
+function buildScripts(theme: ThemeDef, loaderName: string): string {
   const data = {
     auto: theme.kind === "auto",
     mermaid: theme.mermaid,
     mermaidDark: theme.mermaidDark || null,
   };
   return `(function(){
+  var root = document.documentElement;
+  var MIN = 28 * 16;
+  var width = null;
+  function maxWidth(){ return Math.max(MIN, window.innerWidth - 48); }
+  function clamp(px){
+    if (!isFinite(px)) return MIN;
+    if (px < MIN) return MIN;
+    var max = maxWidth();
+    if (px > max) return max;
+    return px;
+  }
+  function apply(px){
+    width = clamp(px);
+    root.style.setProperty("--mdprv-content-width", width + "px");
+  }
+  function store(px){
+    var v = String(Math.round(clamp(px)));
+    try { localStorage.setItem("mdprv_width", v); } catch (e) {}
+    document.cookie = "mdprv_width=" + encodeURIComponent(v) + ";path=/;max-age=31536000;SameSite=Lax";
+  }
+  function readStored(){
+    var raw = null;
+    try { raw = localStorage.getItem("mdprv_width"); } catch (e) {}
+    if (raw === null || raw === "") {
+      var m = document.cookie.match(/(?:^|;\\s*)mdprv_width=([^;]+)/);
+      if (m) raw = decodeURIComponent(m[1]);
+    }
+    if (raw === null || raw === "") return null;
+    var n = parseInt(raw, 10);
+    return isFinite(n) ? n : null;
+  }
+  var stored = readStored();
+  if (stored !== null) apply(stored);
+  window.addEventListener("resize", function(){ if (width !== null) apply(width); });
+  var handles = [
+    document.getElementById("mdprv-drag-left"),
+    document.getElementById("mdprv-drag-right")
+  ].filter(Boolean);
+  function move(e){
+    apply(2 * Math.abs(e.clientX - window.innerWidth / 2));
+  }
+  function stop(){
+    handles.forEach(function(h){ h.classList.remove("mdprv-dragging"); });
+    document.body.style.userSelect = "";
+    document.body.style.cursor = "";
+    window.removeEventListener("pointermove", move);
+    window.removeEventListener("pointerup", stop);
+    window.removeEventListener("pointercancel", stop);
+    if (width !== null) store(width);
+  }
+  handles.forEach(function(h){
+    h.addEventListener("pointerdown", function(e){
+      e.preventDefault();
+      try { h.setPointerCapture(e.pointerId); } catch (err) {}
+      document.body.style.userSelect = "none";
+      document.body.style.cursor = "col-resize";
+      handles.forEach(function(x){ x.classList.add("mdprv-dragging"); });
+      window.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", stop);
+      window.addEventListener("pointercancel", stop);
+    });
+  });
+})();
+(function(){
   var data = ${scriptSafe(data)};
   function cfg(){
     if (data.auto) {
@@ -136,13 +300,145 @@ function buildScripts(theme: ThemeDef): string {
   }
 })();
 (function(){
+  var root = document.documentElement;
+  var LOADERS = ${scriptSafe(LOADERS)};
+  var DEFAULT = ${scriptSafe(loaderName)};
+  var overlay = document.getElementById("mdprv-loader-overlay");
+  var spinner = document.getElementById("mdprv-loader-spinner");
+  var select = document.getElementById("mdprv-loader");
+  var current = DEFAULT;
+  function isLoader(v){ return typeof v === "string" && LOADERS.indexOf(v) >= 0; }
+  function readLoader(){
+    var raw = null;
+    try { raw = localStorage.getItem("mdprv_loader"); } catch (e) {}
+    if (raw === null || raw === "") {
+      var m = document.cookie.match(/(?:^|;\\s*)mdprv_loader=([^;]+)/);
+      if (m) raw = decodeURIComponent(m[1]);
+    }
+    return isLoader(raw) ? raw : DEFAULT;
+  }
+  function applyLoader(name){
+    if (!isLoader(name)) name = DEFAULT;
+    current = name;
+    if (spinner) spinner.className = "mdprv-loader mdprv-loader--" + name;
+    if (select && select.value !== name) select.value = name;
+    root.setAttribute("data-loader", name);
+  }
+  function store(name){
+    try { localStorage.setItem("mdprv_loader", name); } catch (e) {}
+    document.cookie = "mdprv_loader=" + encodeURIComponent(name) + ";path=/;max-age=31536000;SameSite=Lax";
+  }
+  function showLoader(){ if (overlay) overlay.classList.add("mdprv-loader-active"); }
+  function hideLoader(){ if (overlay) overlay.classList.remove("mdprv-loader-active"); }
+  function flash(ms){ showLoader(); setTimeout(hideLoader, ms); }
+  function settle(){
+    showLoader();
+    var start = Date.now();
+    var MIN = 180;
+    var finished = false;
+    function finish(){
+      if (finished) return;
+      finished = true;
+      var wait = Math.max(0, MIN - (Date.now() - start));
+      setTimeout(function(){
+        if (typeof requestAnimationFrame === "function") requestAnimationFrame(hideLoader);
+        else hideLoader();
+      }, wait);
+    }
+    if (document.fonts && document.fonts.ready && document.fonts.ready.then) {
+      document.fonts.ready.then(finish, finish);
+      setTimeout(finish, 600);
+    } else {
+      setTimeout(finish, 250);
+    }
+  }
+  applyLoader(readLoader());
+  window.mdprvLoader = { show: showLoader, hide: hideLoader, set: applyLoader, store: store, flash: flash, settle: settle, current: function(){ return current; } };
+  var pending = false;
+  try {
+    pending = sessionStorage.getItem("mdprv_loader_pending") === "1";
+    if (pending) sessionStorage.removeItem("mdprv_loader_pending");
+  } catch (e) {}
+  if (pending) {
+    showLoader();
+    if (document.readyState === "complete") settle();
+    else window.addEventListener("load", settle);
+  }
+  if (select) {
+    select.addEventListener("change", function(){
+      applyLoader(select.value);
+      store(current);
+      flash(400);
+    });
+  }
+})();
+(function(){
   var sel = document.getElementById("mdprv-theme");
   if (!sel) return;
   sel.addEventListener("change", function(){
     var v = sel.value;
+    if (window.mdprvLoader) {
+      window.mdprvLoader.show();
+      try { sessionStorage.setItem("mdprv_loader_pending", "1"); } catch (e) {}
+    }
     document.cookie = "mdprv_theme=" + encodeURIComponent(v) + ";path=/;max-age=31536000;SameSite=Lax";
-    location.href = location.pathname + (v === "auto" ? "" : "?theme=" + encodeURIComponent(v));
+    setTimeout(function(){
+      location.href = location.pathname + (v === "auto" ? "" : "?theme=" + encodeURIComponent(v));
+    }, 80);
   });
+})();
+(function(){
+  function buildToc(){
+    var article = document.querySelector("article.markdown-body");
+    var nav = document.getElementById("mdprv-toc");
+    if (!article || !nav) return;
+    var heads = Array.prototype.slice.call(
+      article.querySelectorAll("h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]")
+    );
+    if (heads.length === 0) {
+      nav.style.display = "none";
+      return;
+    }
+    var minLevel = 6;
+    heads.forEach(function(h){ minLevel = Math.min(minLevel, parseInt(h.tagName.charAt(1), 10)); });
+    var ul = document.createElement("ul");
+    var links = {};
+    heads.forEach(function(h){
+      var level = parseInt(h.tagName.charAt(1), 10);
+      var li = document.createElement("li");
+      var a = document.createElement("a");
+      a.href = "#" + h.id;
+      a.textContent = h.textContent;
+      a.style.paddingLeft = ((level - minLevel) * 12) + "px";
+      a.addEventListener("click", function(ev){
+        ev.preventDefault();
+        if (h.scrollIntoView) h.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (window.history && history.replaceState) history.replaceState(null, "", "#" + h.id);
+      });
+      links[h.id] = a;
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+    nav.appendChild(ul);
+    if (typeof IntersectionObserver !== "undefined") {
+      try {
+        var obs = new IntersectionObserver(function(entries){
+          entries.forEach(function(en){
+            if (en.isIntersecting) {
+              Object.keys(links).forEach(function(k){ links[k].classList.remove("active"); });
+              if (links[en.target.id]) links[en.target.id].classList.add("active");
+            }
+          });
+        }, { rootMargin: "0px 0px -75% 0px", threshold: 0 });
+        heads.forEach(function(h){ obs.observe(h); });
+      } catch (e) {}
+    }
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", buildToc);
+  } else {
+    buildToc();
+  }
 })();
 (function(){
   var current = null;
@@ -157,11 +453,275 @@ function buildScripts(theme: ThemeDef): string {
       .catch(function(){});
   }
   setInterval(poll, 700);
+})();
+(function(){
+  var COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path></svg>';
+  var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>';
+  function fallback(text, done){
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.top = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      if (ok) done();
+    } catch (e) {}
+  }
+  function copyText(text, done){
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, function(){ fallback(text, done); });
+        return;
+      }
+    } catch (e) {}
+    fallback(text, done);
+  }
+  function setup(pre){
+    if (!pre || !pre.parentNode) return;
+    if (pre.parentNode.classList && pre.parentNode.classList.contains("mdprv-code")) return;
+    var box = document.createElement("div");
+    box.className = "mdprv-code";
+    pre.parentNode.insertBefore(box, pre);
+    box.appendChild(pre);
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "mdprv-copy";
+    btn.setAttribute("aria-label", "Copy code");
+    btn.innerHTML = COPY;
+    btn.addEventListener("click", function(){
+      var text = pre.innerText;
+      copyText(text, function(){
+        btn.innerHTML = CHECK;
+        btn.classList.add("mdprv-copied");
+        clearTimeout(btn._mdprvTimer);
+        btn._mdprvTimer = setTimeout(function(){
+          btn.innerHTML = COPY;
+          btn.classList.remove("mdprv-copied");
+        }, 1200);
+      });
+    });
+    box.appendChild(btn);
+  }
+  function init(){
+    var article = document.querySelector("article.markdown-body");
+    if (!article) return;
+    var pres = article.querySelectorAll("pre:not(.mermaid)");
+    Array.prototype.forEach.call(pres, setup);
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+(function(){
+  var btn = document.getElementById("mdprv-top");
+  if (!btn) return;
+  var ticking = false;
+  function update(){
+    ticking = false;
+    if (window.scrollY > 300) btn.classList.add("mdprv-top-visible");
+    else btn.classList.remove("mdprv-top-visible");
+  }
+  window.addEventListener("scroll", function(){
+    if (ticking) return;
+    ticking = true;
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(update);
+    else setTimeout(update, 100);
+  }, { passive: true });
+  update();
+  btn.addEventListener("click", function(){
+    try { window.scrollTo({ top: 0, behavior: "smooth" }); }
+    catch (e) { window.scrollTo(0, 0); }
+  });
+})();
+(function(){
+  var root = document.documentElement;
+  function readRaw(key, re){
+    var raw = null;
+    try { raw = localStorage.getItem(key); } catch (e) {}
+    if (raw === null || raw === "") {
+      var m = document.cookie.match(re);
+      if (m) raw = decodeURIComponent(m[1]);
+    }
+    return raw;
+  }
+  function persist(key, value){
+    try { localStorage.setItem(key, value); } catch (e) {}
+    document.cookie = key + "=" + encodeURIComponent(value) + ";path=/;max-age=31536000;SameSite=Lax";
+  }
+  function wire(classKey, buttonId, re){
+    var btn = document.getElementById(buttonId);
+    var raw = readRaw(classKey, re);
+    if (raw === "1" || raw === "true") root.classList.add(classKey);
+    function sync(){
+      var collapsed = root.classList.contains(classKey);
+      if (btn) btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+    }
+    sync();
+    if (btn) {
+      btn.addEventListener("click", function(){
+        root.classList.toggle(classKey);
+        persist(classKey, root.classList.contains(classKey) ? "1" : "0");
+        sync();
+      });
+    }
+  }
+  wire("mdprv-left-collapsed", "mdprv-sidebar-toggle", /(?:^|;\\s*)mdprv-left-collapsed=([^;]+)/);
+  wire("mdprv-right-collapsed", "mdprv-history-toggle", /(?:^|;\\s*)mdprv-right-collapsed=([^;]+)/);
+})();
+(function(){
+  var btn = document.getElementById("mdprv-settings-toggle");
+  var panel = document.getElementById("mdprv-settings");
+  if (!btn || !panel) return;
+  function sync(){
+    btn.setAttribute("aria-expanded", panel.hasAttribute("hidden") ? "false" : "true");
+  }
+  btn.addEventListener("click", function(){
+    if (panel.hasAttribute("hidden")) panel.removeAttribute("hidden");
+    else panel.setAttribute("hidden", "");
+    sync();
+  });
+  sync();
+})();
+(function(){
+  var root = document.documentElement;
+  var input = document.getElementById("mdprv-font");
+  var list = document.getElementById("mdprv-font-list");
+  var loadBtn = document.getElementById("mdprv-font-load");
+  var resetBtn = document.getElementById("mdprv-font-reset");
+  function readFont(){
+    var raw = null;
+    try { raw = localStorage.getItem("mdprv_font"); } catch (e) {}
+    if (raw === null || raw === "") {
+      var m = document.cookie.match(/(?:^|;\\s*)mdprv_font=([^;]+)/);
+      if (m) raw = decodeURIComponent(m[1]);
+    }
+    return raw || "";
+  }
+  function apply(value){
+    var v = (value || "").trim();
+    if (v) root.style.setProperty("--mdprv-font", v);
+    else root.style.removeProperty("--mdprv-font");
+  }
+  function store(value){
+    var v = (value || "").trim();
+    try { localStorage.setItem("mdprv_font", v); } catch (e) {}
+    document.cookie = "mdprv_font=" + encodeURIComponent(v) + ";path=/;max-age=31536000;SameSite=Lax";
+  }
+  var initial = readFont();
+  if (initial) apply(initial);
+  if (input) {
+    if (initial) input.value = initial;
+    function onChange(){ apply(input.value); store(input.value); }
+    input.addEventListener("input", onChange);
+    input.addEventListener("change", function(){
+      onChange();
+      if (window.mdprvLoader) window.mdprvLoader.settle();
+    });
+  }
+  if (resetBtn) {
+    resetBtn.addEventListener("click", function(){
+      apply("");
+      store("");
+      if (input) input.value = "";
+      if (window.mdprvLoader) window.mdprvLoader.settle();
+    });
+  }
+  if (loadBtn) {
+    loadBtn.addEventListener("click", function(){
+      if (typeof window.queryLocalFonts !== "function") {
+        loadBtn.setAttribute("title", "Local font access is not supported in this browser");
+        return;
+      }
+      window.queryLocalFonts().then(function(fonts){
+        if (!list || !fonts) return;
+        var seen = {};
+        var frag = document.createDocumentFragment();
+        Array.prototype.forEach.call(fonts, function(f){
+          var name = f && f.family;
+          if (!name || seen[name]) return;
+          seen[name] = true;
+          var opt = document.createElement("option");
+          opt.value = name;
+          frag.appendChild(opt);
+        });
+        list.textContent = "";
+        list.appendChild(frag);
+      }).catch(function(){});
+    });
+  }
+})();
+(function(){
+  var root = document.documentElement;
+  function isEditable(el){
+    if (!el) return false;
+    var tag = el.tagName;
+    if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return true;
+    if (el.isContentEditable) return true;
+    return false;
+  }
+  document.addEventListener("keydown", function(e){
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key !== "z" && e.key !== "Z") return;
+    if (isEditable(e.target)) return;
+    root.classList.toggle("mdprv-zen");
+  });
+})();
+(function(){
+  var list = document.getElementById("mdprv-history-list");
+  if (!list) return;
+  var current = "";
+  try { current = decodeURIComponent(location.pathname.slice(1)); }
+  catch (e) { current = location.pathname.slice(1); }
+  function makeItem(item){
+    var li = document.createElement("li");
+    var a = document.createElement("a");
+    a.href = "/" + encodeURIComponent(item.slug);
+    var title = typeof item.title === "string" ? item.title : "";
+    var path = typeof item.path === "string" ? item.path : "";
+    if (!title) {
+      var base = path.split("/").filter(Boolean).pop();
+      title = base || item.slug;
+    }
+    a.textContent = title;
+    a.title = path || item.slug;
+    if (item.slug === current) a.className = "active";
+    li.appendChild(a);
+    return li;
+  }
+  function load(){
+    fetch("/__slugs", { headers: { Accept: "application/json" } })
+      .then(function(r){
+        if (!r.ok) throw new Error("bad status");
+        return r.json();
+      })
+      .then(function(data){
+        var slugs = data && data.slugs;
+        if (!Array.isArray(slugs)) return;
+        var frag = document.createDocumentFragment();
+        slugs.forEach(function(item){
+          if (item && typeof item.slug === "string" && item.slug) frag.appendChild(makeItem(item));
+        });
+        list.textContent = "";
+        list.appendChild(frag);
+      })
+      .catch(function(){});
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", load);
+  else load();
+  setInterval(load, 4000);
 })();`;
 }
 
 export function renderPage(input: PageInput): string {
   const theme = getTheme(input.themeName);
+  const loader = resolveLoaderName(input.loader);
   const css = [
     themeCss(theme),
     BASE_CSS,
@@ -177,26 +737,63 @@ export function renderPage(input: PageInput): string {
     )
     .join("");
 
+  const loaderOptions = LOADERS.map(
+    (name) =>
+      `<option value="${escapeHtml(name)}"${name === loader ? " selected" : ""}>${escapeHtml(name)}</option>`
+  ).join("");
+
   return [
     "<!DOCTYPE html>",
-    '<html lang="en">',
+    `<html lang="en" data-loader="${escapeHtml(loader)}">`,
     "<head>",
     '<meta charset="utf-8">',
     '<meta name="viewport" content="width=device-width, initial-scale=1">',
+    '<link rel="icon" href="data:,">',
     `<title>${escapeHtml(input.title)}</title>`,
     "<style>",
     css,
     "</style>",
     "</head>",
     "<body>",
-    `<select id="mdprv-theme" class="mdprv-theme-toggle" aria-label="Theme">${options}</select>`,
-    renderMeta(input.meta),
+    '<aside class="mdprv-sidebar" id="mdprv-sidebar">',
+    '<div class="mdprv-sidebar-head">',
+    '<span class="mdprv-sidebar-title">Preview</span>',
+    "</div>",
+    '<nav id="mdprv-toc" class="mdprv-toc" aria-label="Table of contents"></nav>',
+    "</aside>",
+    '<button type="button" id="mdprv-settings-toggle" class="mdprv-settings-toggle" aria-label="Preview settings" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></button>',
+    '<div class="mdprv-settings" id="mdprv-settings" hidden>',
+    '<label class="mdprv-field-label" for="mdprv-theme">Theme</label>',
+    `<select id="mdprv-theme" class="mdprv-theme" aria-label="Theme">${options}</select>`,
+    '<label class="mdprv-field-label" for="mdprv-font">Font</label>',
+    '<div class="mdprv-font-row">',
+    '<input id="mdprv-font" class="mdprv-input" type="text" list="mdprv-font-list" placeholder="Font family (e.g. Inter)" autocomplete="off" spellcheck="false" aria-label="Font family">',
+    '<datalist id="mdprv-font-list"></datalist>',
+    '<div class="mdprv-font-actions">',
+    '<button type="button" id="mdprv-font-load" class="mdprv-btn">Load system fonts</button>',
+    '<button type="button" id="mdprv-font-reset" class="mdprv-btn">Reset</button>',
+    "</div>",
+    "</div>",
+    '<label class="mdprv-field-label" for="mdprv-loader">Loader</label>',
+    `<select id="mdprv-loader" class="mdprv-theme" aria-label="Loading indicator">${loaderOptions}</select>`,
+    "</div>",
+    '<button type="button" id="mdprv-sidebar-toggle" class="mdprv-sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M9 3v18"></path></svg></button>',
+    '<aside class="mdprv-history" id="mdprv-history" aria-label="Recent previews">',
+    '<div class="mdprv-sidebar-head"><span class="mdprv-sidebar-title">Recent</span></div>',
+    '<ul class="mdprv-history-list" id="mdprv-history-list"></ul>',
+    "</aside>",
+    '<button type="button" id="mdprv-history-toggle" class="mdprv-history-toggle" aria-label="Toggle recent previews" aria-expanded="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M15 3v18"></path></svg></button>',
+    '<div class="mdprv-drag mdprv-drag-left" id="mdprv-drag-left" role="separator" aria-orientation="vertical" aria-label="Resize content width (left)"></div>',
+    '<div class="mdprv-drag mdprv-drag-right" id="mdprv-drag-right" role="separator" aria-orientation="vertical" aria-label="Resize content width (right)"></div>',
+    '<button type="button" id="mdprv-top" class="mdprv-top" aria-label="Back to top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"></path><path d="M5 12l7-7 7 7"></path></svg></button>',
+    `<div id="mdprv-loader-overlay" class="mdprv-loader-overlay" aria-hidden="true"><div id="mdprv-loader-spinner" class="mdprv-loader mdprv-loader--${escapeHtml(loader)}"></div></div>`,
     '<article class="markdown-body">',
+    renderMeta(input.meta),
     input.body,
     "</article>",
     '<script src="/__assets/mermaid.min.js"></script>',
     "<script>",
-    buildScripts(theme),
+    buildScripts(theme, loader),
     "</script>",
     "</body>",
     "</html>",

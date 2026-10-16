@@ -135,20 +135,81 @@ function M.request(port, method, path, body, timeout_ms)
   return status, resp_body
 end
 
+function M.plugin_dir()
+  local source = debug.getinfo(1, "S").source:sub(2)
+  return vim.fn.fnamemodify(source, ":p:h:h:h")
+end
+
+function M.server_dir()
+  return M.plugin_dir() .. "/server"
+end
+
+function M.binary_path()
+  return M.server_dir() .. "/bin/md-preview-server"
+end
+
+local function tail(text, max)
+  if type(text) ~= "string" or text == "" then
+    return ""
+  end
+  text = vim.trim(text)
+  if #text <= max then
+    return text
+  end
+  return "…" .. text:sub(#text - max + 1)
+end
+
+function M.build()
+  local server_dir = M.server_dir()
+  local script = server_dir .. "/build.sh"
+  vim.notify(
+    "md-preview: installing dependencies and building the server (first run)…",
+    vim.log.levels.INFO
+  )
+  local result
+  local ok_system, err = pcall(function()
+    result = vim.system({ "bash", script }, { cwd = server_dir }):wait(180000)
+  end)
+  if not ok_system then
+    vim.notify("md-preview: server build failed to run: " .. tostring(err), vim.log.levels.ERROR)
+    return false, tostring(err), ""
+  end
+
+  local stderr = (result and result.stderr) or ""
+  local stdout = (result and result.stdout) or ""
+  if result and result.code == 0 then
+    vim.notify("md-preview: server installed and built", vim.log.levels.INFO)
+    return true, stderr, stdout
+  end
+
+  local code = result and result.code or -1
+  local reason = stderr ~= "" and stderr or stdout
+  local hint = ""
+  if reason:find("bun is required", 1, true) then
+    hint = " (bun is required; install it from https://bun.sh)"
+  end
+  local message = ("md-preview: server build failed (exit %s)%s"):format(tostring(code), hint)
+  local detail = tail(reason, 500)
+  if detail ~= "" then
+    message = message .. ": " .. detail
+  end
+  vim.notify(message, vim.log.levels.ERROR)
+  return false, stderr, stdout
+end
+
 function M.spawn(opts)
   opts = opts or {}
-  local source = debug.getinfo(1, "S").source:sub(2)
-  local plugin_dir = vim.fn.fnamemodify(source, ":p:h:h:h")
-  local server_dir = plugin_dir .. "/server"
-  local bin = server_dir .. "/bin/md-preview-server"
+  local bin = M.binary_path()
 
   if vim.fn.executable(bin) == 0 and opts.auto_build ~= false then
-    vim.notify("md-preview: building server…", vim.log.levels.INFO)
-    vim.system({ "bash", server_dir .. "/build.sh" }, { cwd = server_dir }):wait(180000)
+    M.build(opts)
   end
 
   if vim.fn.executable(bin) == 0 then
-    vim.notify("md-preview: server binary missing; run " .. server_dir .. "/build.sh", vim.log.levels.ERROR)
+    vim.notify(
+      "md-preview: server binary missing; run " .. M.server_dir() .. "/build.sh",
+      vim.log.levels.ERROR
+    )
     return nil
   end
 
@@ -160,6 +221,7 @@ function M.spawn(opts)
       MDPRV_IDLE = tostring(opts.idle_minutes or DEFAULT_IDLE),
       MDPRV_STATE = state_path(),
       MDPRV_THEME = tostring(opts.theme or "auto"),
+      MDPRV_LOADER = tostring(opts.loader or "classic"),
     },
   })
 end
